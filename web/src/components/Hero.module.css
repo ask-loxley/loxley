@@ -116,6 +116,12 @@
   transform-origin: left;
 }
 
+.navRight {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .launch {
   display: inline-flex;
   align-items: center;
@@ -337,6 +343,9 @@
     padding: 18px 24px;
   }
   .links {
+    display: none;
+  }
+  .navSocials {
     display: none;
   }
   .chat {

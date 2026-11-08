@@ -574,6 +574,10 @@
   color: #fff;
 }
 
+.footSocials {
+  margin-top: 20px;
+}
+
 .footTag {
   max-width: 260px;
   margin: 18px 0 0;

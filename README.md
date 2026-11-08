@@ -2,6 +2,8 @@
 
 Loxley is an AI agent for Robinhood Chain (chain ID 4663). Live at https://askloxley.com.
 
+Follow on X: [@askloxleycom](https://x.com/askloxleycom) · Telegram bot: [@loxleyalertsbot](https://t.me/loxleyalertsbot)
+
 It audits contracts, builds P&L reports, finds DeFi yield, tracks whales, scores airdrop readiness, drafts social posts, and sends Telegram alerts through [@loxleyalertsbot](https://t.me/loxleyalertsbot). It is read-only: it never holds funds or asks for keys.
 
 ## Repository layout

@@ -95,8 +95,15 @@
   font-weight: 500;
 }
 
+.sideFoot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 .sideNote {
-  margin: auto 0 0;
+  margin: 0;
   font-size: 12px;
   line-height: 1.5;
   color: #8ea6a1;

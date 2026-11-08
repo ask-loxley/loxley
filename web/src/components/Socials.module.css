@@ -1,0 +1,59 @@
+/* "li a" selectors keep these styles from being overridden by surrounding link styles (e.g. footer columns). */
+.list {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li a {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border-radius: 50%;
+  transition:
+    transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1),
+    background 0.2s,
+    color 0.2s;
+}
+
+.list li svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.list li a:hover {
+  transform: translateY(-2px) scale(1.06);
+}
+
+/* on blue hero or dark teal */
+.light li a {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.light li a:hover {
+  background: #fff;
+  color: var(--teal);
+}
+
+/* on cream */
+.dark li a {
+  background: var(--teal);
+  color: var(--cream);
+}
+
+.dark li a:hover {
+  background: var(--vermilion);
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list li a {
+    transition: none;
+  }
+}

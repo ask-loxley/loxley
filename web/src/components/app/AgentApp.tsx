@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { AgentEvent } from "@/lib/agent";
 import type { AirdropReport } from "@/lib/airdrop";
 import type { AuditReport } from "@/lib/audit";
+import Socials from "../Socials";
 import Wordmark from "../Wordmark";
 import AirdropCard from "./AirdropCard";
 import DraftCard from "./DraftCard";
@@ -273,7 +274,10 @@ export default function AgentApp() {
             </a>
           </div>
         )}
-        <p className={styles.sideNote}>Read-only. Loxley never asks for keys or seed phrases. Not financial advice.</p>
+        <div className={styles.sideFoot}>
+          <Socials tone="light" />
+          <p className={styles.sideNote}>Read-only. Loxley never asks for keys or seed phrases. Not financial advice.</p>
+        </div>
       </aside>
 
       <main className={styles.main}>

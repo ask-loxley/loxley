@@ -3,6 +3,7 @@ import Agents from "@/components/Agents";
 import Hero from "@/components/Hero";
 import LiveStats from "@/components/LiveStats";
 import Reveal from "@/components/Reveal";
+import Socials, { SOCIALS } from "@/components/Socials";
 import Wordmark from "@/components/Wordmark";
 import styles from "./page.module.css";
 
@@ -214,21 +215,37 @@ export default function Home() {
           <div>
             <Wordmark size="lg" />
             <p className={styles.footTag}>Loxley, your on-chain agent for Robinhood Chain.</p>
+            <Socials tone="light" className={styles.footSocials} />
           </div>
-          {[
-            ["Agents", ["Contract Auditor", "Smart Money", "Yield Finder", "Airdrop Hunter"]],
-            ["Resources", ["Docs", "Blog", "Changelog", "Status"]],
-            ["Company", ["About", "Privacy", "Terms", "Contact"]],
-          ].map(([title, links]) => (
-            <div key={title as string}>
-              <h4>{title as string}</h4>
-              {(links as string[]).map((l) => (
-                <a key={l} href={title === "Agents" ? "/app" : "#"}>
-                  {l}
-                </a>
-              ))}
-            </div>
-          ))}
+          <div>
+            <h4>Agents</h4>
+            {["Contract Auditor", "Smart Money", "Yield Finder", "Airdrop Hunter", "P&L Report"].map((l) => (
+              <a key={l} href="/app">
+                {l}
+              </a>
+            ))}
+          </div>
+          <div>
+            <h4>Community</h4>
+            <a href={SOCIALS.x.url} target="_blank" rel="noopener noreferrer">
+              X · {SOCIALS.x.handle}
+            </a>
+            <a href={SOCIALS.telegram.url} target="_blank" rel="noopener noreferrer">
+              Telegram · {SOCIALS.telegram.handle}
+            </a>
+            <a href={SOCIALS.github.url} target="_blank" rel="noopener noreferrer">
+              GitHub
+            </a>
+          </div>
+          <div>
+            <h4>Loxley</h4>
+            <a href="/app">Launch app</a>
+            <a href="#how">How it works</a>
+            <a href="#safety">Safety</a>
+            <a href={`${SOCIALS.github.url}#readme`} target="_blank" rel="noopener noreferrer">
+              Docs
+            </a>
+          </div>
         </div>
         <div className={styles.legal}>
           <span>© 2026 LOXLEY · NOT FINANCIAL ADVICE</span>

@@ -26,10 +26,29 @@ const mono = JetBrains_Mono({
   weight: "500",
 });
 
+const DESCRIPTION =
+  "Meet Loxley, your on-chain agent for Robinhood Chain. It reads contracts, follows smart money, finds yield and hunts airdrops.";
+
 export const metadata: Metadata = {
-  title: "Loxley — On-chain intelligence for Robinhood Chain",
-  description:
-    "Six AI agents that read contracts, follow smart money, find yield and hunt airdrops on Robinhood Chain.",
+  metadataBase: new URL("https://askloxley.com"),
+  title: "Loxley — your on-chain agent for Robinhood Chain",
+  description: DESCRIPTION,
+  openGraph: {
+    type: "website",
+    url: "https://askloxley.com",
+    siteName: "Loxley",
+    title: "Loxley — your on-chain agent for Robinhood Chain",
+    description: DESCRIPTION,
+    images: [{ url: "/brand/loxley-hero-blue.png", width: 1254, height: 1254, alt: "Loxley, an engraved Roman statue typing on a keyboard" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@askloxleycom",
+    creator: "@askloxleycom",
+    title: "Loxley — your on-chain agent for Robinhood Chain",
+    description: DESCRIPTION,
+    images: ["/brand/loxley-hero-blue.png"],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
