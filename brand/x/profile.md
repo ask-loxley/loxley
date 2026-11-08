@@ -11,8 +11,8 @@
 - **Website:** askloxley.com
 
 ## Bio options
-1. (138 chars) Your on-chain agent for Robinhood Chain 🏛️ Audits contracts, tracks whales, finds yield & hunts airdrops. Read-only. Not financial advice.
-2. (110 chars) The AI that watches Robinhood Chain for you. Contract audits · whale alerts · yield · airdrops. Ask anything 👇
-3. (116 chars) Ancient wisdom, on-chain 🏛️ Loxley reads Robinhood Chain so you don’t have to: audits, whales, yield, airdrops. NFA.
+1. (131 chars) The AI agent for Robinhood Chain 🏛️ Audits contracts, tracks whales, finds yield & hunts airdrops. Read-only. Not financial advice.
+2. (116 chars) The AI agent that watches Robinhood Chain for you. Contract audits · whale alerts · yield · airdrops. Ask anything 👇
+3. (125 chars) Ancient wisdom, AI-powered 🏛️ Loxley is an AI agent that reads Robinhood Chain for you: audits, whales, yield, airdrops. NFA.
 
 After the $LOXLEY launch, add the official contract address to the bio (or pin it) so people don't buy lookalike tokens.
