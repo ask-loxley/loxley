@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import styles from "./Hero.module.css";
-import Socials from "./Socials";
 import Wordmark from "./Wordmark";
 
 type Message = { from: "you" | "loxley"; text: string };
@@ -155,12 +154,9 @@ export default function Hero() {
           <a href="#safety">Safety</a>
           <a href="/app">Ask Loxley</a>
         </nav>
-        <div className={styles.navRight}>
-          <Socials tone="light" className={styles.navSocials} />
-          <a href="/app" className={styles.launch}>
-            Launch app <span className={styles.arrow}>→</span>
-          </a>
-        </div>
+        <a href="/app" className={styles.launch}>
+          Launch app <span className={styles.arrow}>→</span>
+        </a>
       </header>
 
       <Conversation key={index} messages={scene.messages} reduced={reduced} />
