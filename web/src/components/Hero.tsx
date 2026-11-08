@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import styles from "./Hero.module.css";
+import Wordmark from "./Wordmark";
 
 type Message = { from: "you" | "loxley"; text: string };
 
@@ -145,9 +146,7 @@ export default function Hero() {
 
       <header className={styles.nav}>
         <a href="#" className={styles.brand} aria-label="Loxley home">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/loxley-logo-round.png" alt="" width={52} height={52} />
-          <span>loxley</span>
+          <Wordmark size="md" />
         </a>
         <nav className={styles.links} aria-label="Main">
           <a href="#agents">Agents</a>

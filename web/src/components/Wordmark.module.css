@@ -1,0 +1,96 @@
+.wm {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+}
+
+.logo {
+  flex: none;
+  border-radius: 50%;
+  transition: transform 0.6s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+a:hover > .wm .logo,
+.wm:hover .logo {
+  transform: rotate(-12deg) scale(1.06);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.name {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 0.9;
+}
+
+.tag {
+  margin-top: 4px;
+  font-family: var(--font-mono), monospace;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.26em;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+.xs {
+  gap: 8px;
+}
+.xs .name {
+  font-size: 26px;
+}
+.xs .tag {
+  font-size: 7.5px;
+  margin-top: 2px;
+}
+
+.sm .name {
+  font-size: 31px;
+}
+.sm .tag {
+  font-size: 8.5px;
+}
+
+.md .name {
+  font-size: 40px;
+}
+.md .tag {
+  font-size: 9.5px;
+}
+
+.lg {
+  gap: 14px;
+}
+.lg .name {
+  font-size: 56px;
+}
+.lg .tag {
+  font-size: 11px;
+  margin-top: 6px;
+}
+
+@media (max-width: 700px) {
+  .md .name {
+    font-size: 32px;
+  }
+  .md .tag {
+    font-size: 8px;
+  }
+  .md .logo {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo {
+    transition: none;
+  }
+}

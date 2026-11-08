@@ -19,14 +19,6 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.brand span {
-  font-family: var(--font-wordmark), sans-serif;
-  font-weight: 500;
-  font-size: 28px;
-  letter-spacing: -0.035em;
 }
 
 .newChat {
@@ -880,9 +872,6 @@
     padding: 12px 16px;
     background: var(--teal);
     color: var(--cream);
-  }
-  .mobileBar .brand span {
-    font-size: 22px;
   }
   .mobileBar button {
     min-height: 40px;

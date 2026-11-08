@@ -3,6 +3,7 @@ import Agents from "@/components/Agents";
 import Hero from "@/components/Hero";
 import LiveStats from "@/components/LiveStats";
 import Reveal from "@/components/Reveal";
+import Wordmark from "@/components/Wordmark";
 import styles from "./page.module.css";
 
 const STEPS = [
@@ -211,11 +212,7 @@ export default function Home() {
         </Reveal>
         <div className={styles.cols}>
           <div>
-            <div className={styles.footBrand}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/brand/loxley-logo-round.png" alt="" width={80} height={80} />
-              <span>loxley</span>
-            </div>
+            <Wordmark size="lg" />
             <p className={styles.footTag}>Loxley, your on-chain agent for Robinhood Chain.</p>
           </div>
           {[

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { AgentEvent } from "@/lib/agent";
 import type { AirdropReport } from "@/lib/airdrop";
 import type { AuditReport } from "@/lib/audit";
+import Wordmark from "../Wordmark";
 import AirdropCard from "./AirdropCard";
 import DraftCard from "./DraftCard";
 import type { Draft } from "@/lib/content";
@@ -244,10 +245,8 @@ export default function AgentApp() {
   return (
     <div className={styles.shell}>
       <aside className={styles.side}>
-        <Link href="/" className={styles.brand}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/loxley-logo-round.png" alt="" width={40} height={40} />
-          <span>loxley</span>
+        <Link href="/" className={styles.brand} aria-label="Loxley home">
+          <Wordmark size="sm" />
         </Link>
         <button className={styles.newChat} onClick={newChat}>
           + New chat
@@ -279,10 +278,8 @@ export default function AgentApp() {
 
       <main className={styles.main}>
         <div className={styles.mobileBar}>
-          <Link href="/" className={styles.brand}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/loxley-logo-round.png" alt="" width={32} height={32} />
-            <span>loxley</span>
+          <Link href="/" className={styles.brand} aria-label="Loxley home">
+            <Wordmark size="xs" />
           </Link>
           <button onClick={newChat}>New chat</button>
         </div>

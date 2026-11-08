@@ -574,19 +574,6 @@
   color: #fff;
 }
 
-.footBrand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.footBrand span {
-  font-family: var(--font-wordmark), sans-serif;
-  font-weight: 500;
-  font-size: 36px;
-  letter-spacing: -0.035em;
-}
-
 .footTag {
   max-width: 260px;
   margin: 18px 0 0;
