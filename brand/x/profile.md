@@ -2,7 +2,7 @@
 
 ## Images
 - Profile picture: `loxley-x-pfp-400.png` (400×400; `loxley-x-pfp-1000.png` is the high-res version)
-- Banner: `loxley-x-banner-blue.png` (main), with `-pink` and `-orange` as alternates (1500×500)
+- Banner (1500×500, same #E9E4D6 background as the profile picture): `loxley-x-banner-typing.png` (main), with `-arms` and `-monitor` as alternates. The earlier blue/pink/orange banners are in `brand/old/x-colored/`.
 
 ## Profile fields
 - **Name:** Loxley
