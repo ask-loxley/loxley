@@ -1,0 +1,167 @@
+.section {
+  display: grid;
+  grid-template-columns: 1fr 520px;
+  gap: 72px;
+  padding: 110px 96px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+
+.title {
+  margin: 12px 0 40px;
+  font-family: var(--font-serif), serif;
+  font-weight: 400;
+  font-size: 60px;
+  line-height: 1;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid var(--line);
+}
+
+.item {
+  position: relative;
+  border-top: 1px solid var(--line);
+}
+
+/* a vermilion bar grows beside the open agent */
+.item::before {
+  content: "";
+  position: absolute;
+  left: -18px;
+  top: 18px;
+  width: 3px;
+  height: 0;
+  border-radius: 2px;
+  background: var(--vermilion);
+  transition: height 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.on::before {
+  height: calc(100% - 36px);
+}
+
+.head {
+  width: 100%;
+  min-height: 64px;
+  padding: 16px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-serif), serif;
+  font-size: 32px;
+  color: #7d8c88;
+  transition: color 0.2s;
+}
+
+.head:hover,
+.on .head {
+  color: var(--teal);
+}
+
+.num {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--red);
+}
+
+/* smooth open/close: animate the row height from 0fr to 1fr */
+.body {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 0.35s ease;
+}
+
+.bodyOpen {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.body > div {
+  overflow: hidden;
+}
+
+.body p {
+  margin: 0 0 20px;
+  max-width: 520px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.pic {
+  position: relative;
+  height: 640px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--pink);
+}
+
+.pic img {
+  position: absolute;
+  width: 640px;
+  left: -40px;
+  top: 0;
+  animation: float 7s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(-0.6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pic img {
+    animation: none;
+  }
+  .body,
+  .item::before {
+    transition: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  .section {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 72px 24px;
+  }
+  .pic {
+    height: 420px;
+  }
+  .pic img {
+    width: 100%;
+    left: 0;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+  .title {
+    font-size: 44px;
+  }
+  .head {
+    font-size: 26px;
+  }
+}

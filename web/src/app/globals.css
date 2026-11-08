@@ -1,0 +1,42 @@
+:root {
+  --cream: #f3f0e6;
+  --paper: #fbf9f3;
+  --tile: #e9e4d6;
+  --teal: #123f3d;
+  --muted: #4a5a56;
+  --red: #c2411c;
+  --vermilion: #e8542c;
+  --blue: #2aa2e6;
+  --pink: #ee5fb2;
+  --orange: #f0612b;
+  --line: #ddd6c4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--cream);
+  color: var(--teal);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+}

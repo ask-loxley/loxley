@@ -1,0 +1,20 @@
+# Dependencies and build output
+node_modules/
+.next/
+.open-next/
+.wrangler/
+out/
+
+# Secrets and local state (never commit)
+.env
+.env.*
+!.env.example
+.dev.vars
+web/data/
+
+# Large reference media
+*.mp4
+
+# OS files
+Thumbs.db
+.DS_Store

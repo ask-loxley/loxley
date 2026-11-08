@@ -1,0 +1,48 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "loxley",
+  // Custom entry that wraps OpenNext's worker and adds the cron handler.
+  "main": "worker.mjs",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "loxley"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "loxley",
+      "database_id": "6338d838-c2d3-4533-9d13-c374b6b452ad"
+    }
+  ],
+  // Custom domains (Cloudflare creates the DNS records). workers.dev stays on as a fallback.
+  "workers_dev": true,
+  "preview_urls": false,
+  "routes": [
+    { "pattern": "askloxley.com", "custom_domain": true },
+    { "pattern": "www.askloxley.com", "custom_domain": true }
+  ],
+  // Telegram watch checks (same cadence as ALERT_INTERVAL_SEC locally).
+  "triggers": {
+    "crons": ["*/2 * * * *"]
+  },
+  // Non-secret settings. Secrets (API keys, bot token, webhook secret) are set with `wrangler secret`.
+  "vars": {
+    "LOXLEY_RUNTIME": "cloudflare",
+    "APP_URL": "https://askloxley.com",
+    "OPENROUTER_MODEL": "anthropic/claude-sonnet-5.5",
+    "OPENROUTER_SEARCH_MODEL": "anthropic/claude-haiku-5.5",
+    "BLOCKSCOUT_API_BASE": "https://api.blockscout.com/4663/api/v2",
+    "ALERT_INTERVAL_SEC": "120"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
