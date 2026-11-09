@@ -22,7 +22,27 @@
   font-size: 15px;
   font-weight: 500;
   color: var(--teal);
-  transition: transform 0.15s;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform 0.15s,
+    translate 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+/* a light sweep crosses the button on hover */
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.7s ease;
+}
+
+.btn:hover::after {
+  transform: translateX(120%);
 }
 
 .btn:hover {
@@ -191,6 +211,23 @@
   border-radius: 10px;
   background: var(--teal);
   color: var(--cream);
+  position: relative;
+}
+
+/* glare that follows the cursor while the card tilts */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(520px circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, 0.09), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.card:hover::after {
+  opacity: 1;
 }
 
 .card .h2 {
@@ -393,6 +430,22 @@
   padding: 0;
   list-style: none;
   text-align: left;
+  position: relative;
+  isolation: isolate;
+}
+
+/* a chain line draws through the three steps as the section scrolls by */
+.grid3::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 64px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--vermilion) 0 10px, transparent 10px 16px);
+  transform: scaleX(clamp(0, calc((var(--p, 1) - 0.2) * 2.6), 1));
+  transform-origin: left;
 }
 
 .grid3 > li {
@@ -454,6 +507,7 @@
   overflow: hidden;
   background: var(--orange);
   color: #fff;
+  --ul: #fff;
 }
 
 .safeText {
@@ -508,6 +562,7 @@
   height: 100%;
   object-fit: cover;
   object-position: 68% center;
+  scale: 1.14;
   animation: pan 18s ease-in-out infinite alternate;
   transition: transform 0.8s ease;
 }
@@ -525,8 +580,32 @@
   }
 }
 
+/* Loxley's radar: a scan line sweeps over the monitor scene */
+.scan {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 38%;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.16) 85%, rgba(255, 255, 255, 0.55) 99%, transparent);
+  mix-blend-mode: overlay;
+  animation: scan 4.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes scan {
+  from {
+    transform: translateY(-110%);
+  }
+  to {
+    transform: translateY(290%);
+  }
+}
+
 /* footer */
 .foot {
+  overflow: hidden;
   padding: 80px 96px 48px;
   background: var(--teal);
   color: var(--cream);
@@ -597,6 +676,24 @@
   color: #9fb0ac;
 }
 
+/* giant drifting wordmark at the bottom of the footer */
+.giant {
+  margin: 8px -96px 36px;
+  white-space: nowrap;
+  font-family: var(--font-serif), serif;
+  font-size: clamp(120px, 19vw, 300px);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: transparent;
+  -webkit-text-stroke: 1px #3f6f6b;
+  user-select: none;
+}
+
+.giant em {
+  color: #1d4e4b;
+  -webkit-text-stroke: 0;
+}
+
 /* responsive */
 @media (max-width: 1100px) {
   .intro {
@@ -628,6 +725,12 @@
   .grid3 {
     grid-template-columns: 1fr;
   }
+  .grid3::before {
+    display: none;
+  }
+  .giant {
+    margin: 0 -24px 28px;
+  }
   .safe {
     grid-template-columns: 1fr;
     margin: 0 24px 72px;
@@ -656,6 +759,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .scan,
+  .btn::after {
+    display: none;
+  }
+
   .word,
   .chat .user,
   .chat .agent,

@@ -112,6 +112,7 @@
   border-radius: 8px;
   overflow: hidden;
   background: var(--pink);
+  transition: background-color 0.9s ease;
 }
 
 .pic img {
@@ -119,7 +120,42 @@
   width: 640px;
   left: -40px;
   top: 0;
-  animation: float 7s ease-in-out infinite;
+  opacity: 0;
+  filter: blur(8px);
+  transform: scale(1.08);
+  transition:
+    opacity 0.8s ease,
+    filter 0.8s ease,
+    transform 1.1s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.pic img.picOn {
+  opacity: 1;
+  filter: none;
+  transform: none;
+  animation: float 7s ease-in-out 1.1s infinite;
+}
+
+/* big agent number that rolls in each time the selection changes */
+.picNum {
+  position: absolute;
+  left: 28px;
+  bottom: 18px;
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-size: 120px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 6px 30px rgba(0, 0, 0, 0.18);
+  animation: numIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  pointer-events: none;
+}
+
+@keyframes numIn {
+  from {
+    opacity: 0;
+    transform: translateY(40%) rotate(6deg);
+  }
 }
 
 @keyframes float {
@@ -133,8 +169,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pic img {
+  .pic img,
+  .pic img.picOn,
+  .picNum {
     animation: none;
+    transition: none;
+    filter: none;
   }
   .body,
   .item::before {

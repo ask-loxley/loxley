@@ -29,6 +29,21 @@
   }
 }
 
+.stage,
+.chatLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.chatLayer {
+  z-index: 2;
+}
+
+.chatLayer > * {
+  pointer-events: auto;
+}
+
 .statue {
   position: absolute;
   right: 20px;
@@ -128,7 +143,8 @@
   font-weight: 500;
   transition:
     transform 0.2s,
-    box-shadow 0.2s;
+    box-shadow 0.2s,
+    translate 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2);
 }
 
 .launch:hover {

@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import SplitTitle from "./SplitTitle";
 import styles from "./Agents.module.css";
+
+// The picture changes with the open agent: one duotone scene per pair of agents.
+const PICS = [
+  { src: "/brand/loxley-hero-blue.png", color: "var(--blue)", alt: "Loxley, an engraved Roman statue wearing headphones, typing on a keyboard" },
+  { src: "/brand/loxley-hero-pink.png", color: "var(--pink)", alt: "Loxley, an engraved Roman statue wearing headphones, arms crossed" },
+  { src: "/brand/loxley-hero-orange.png", color: "var(--orange)", alt: "Loxley, an engraved Roman statue wearing headphones, watching a chain dashboard" },
+];
 
 const AGENTS = [
   {
@@ -37,11 +45,7 @@ export default function Agents() {
     <section id="agents" className={styles.section}>
       <div>
         <span className={styles.eyebrow}>The agents</span>
-        <h2 className={styles.title}>
-          Six specialists,
-          <br />
-          <em>one</em> Loxley
-        </h2>
+        <SplitTitle className={styles.title} text={"Six specialists,\n*one* Loxley"} />
         <ul className={styles.list}>
           {AGENTS.map((a, i) => (
             <li key={a.name} className={`${styles.item} ${i === open ? styles.on : ""}`}>
@@ -62,13 +66,22 @@ export default function Agents() {
           ))}
         </ul>
       </div>
-      <div className={styles.pic}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/brand/loxley-hero-pink.png"
-          alt="Loxley, an engraved Roman statue wearing headphones, arms crossed"
-          loading="lazy"
-        />
+      <div className={styles.pic} style={{ backgroundColor: PICS[Math.floor(open / 2)].color }}>
+        {PICS.map((p, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={p.src}
+            src={p.src}
+            alt={i === Math.floor(open / 2) ? p.alt : ""}
+            aria-hidden={i !== Math.floor(open / 2)}
+            className={i === Math.floor(open / 2) ? styles.picOn : ""}
+            loading="lazy"
+            data-depth="-12"
+          />
+        ))}
+        <span key={open} className={styles.picNum} aria-hidden>
+          {String(open + 1).padStart(2, "0")}
+        </span>
       </div>
     </section>
   );

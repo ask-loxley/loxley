@@ -2,8 +2,10 @@ import type { CSSProperties } from "react";
 import Agents from "@/components/Agents";
 import Hero from "@/components/Hero";
 import LiveStats from "@/components/LiveStats";
+import Motion from "@/components/Motion";
 import Reveal from "@/components/Reveal";
 import Socials, { SOCIALS } from "@/components/Socials";
+import SplitTitle from "@/components/SplitTitle";
 import Wordmark from "@/components/Wordmark";
 import styles from "./page.module.css";
 
@@ -59,6 +61,7 @@ const Arrow = () => <span className={styles.arrow}>→</span>;
 export default function Home() {
   return (
     <>
+      <Motion />
       <a href="/app?q=How%20ready%20is%20my%20wallet%20for%20a%20Robinhood%20Chain%20airdrop%3F" className={styles.announce}>
         Robinhood Chain airdrop season is on. See how ready your wallet is.
         <b>
@@ -89,10 +92,10 @@ export default function Home() {
               ))}
             </h1>
             <div className={styles.ctas}>
-              <a href="/app" className={`${styles.btn} ${styles.dark}`}>
+              <a href="/app" className={`${styles.btn} ${styles.dark}`} data-magnetic>
                 Ask Loxley <Arrow />
               </a>
-              <a href="#how" className={`${styles.btn} ${styles.light}`}>
+              <a href="#how" className={`${styles.btn} ${styles.light}`} data-magnetic>
                 See how it works
               </a>
             </div>
@@ -100,7 +103,7 @@ export default function Home() {
         </Reveal>
 
         <div className={styles.marquee} aria-label="Loxley's skills and data sources">
-          <div className={styles.track}>
+          <div className={styles.track} data-marquee>
             {[...TICKER, ...TICKER].map((t, i) => (
               <span key={i} className={styles.source} aria-hidden={i >= TICKER.length}>
                 {t}
@@ -121,14 +124,12 @@ export default function Home() {
         </Reveal>
 
         <Reveal className={styles.product}>
-          <div className={styles.card}>
+          <div className={styles.card} data-tilt="4">
             <div>
               <span className={styles.eyebrow} style={{ color: "var(--vermilion)" }}>
                 Ask in plain words
               </span>
-              <h2 className={styles.h2}>
-                Answers you can <em>act</em> on
-              </h2>
+              <SplitTitle className={styles.h2} text="Answers you can *act* on" />
               <p className={styles.cardText}>
                 No dashboards to decode. Ask Loxley a question, and it pulls the chain data, checks it, and
                 tells you what it means, with every source linked.
@@ -159,13 +160,11 @@ export default function Home() {
         <section id="how" className={styles.steps}>
           <Reveal>
             <span className={styles.eyebrow}>How it works</span>
-            <h2 className={styles.h2}>
-              Three steps to a <em>sharper</em> wallet
-            </h2>
+            <SplitTitle className={styles.h2} text="Three steps to a *sharper* wallet" />
           </Reveal>
-          <ol className={styles.grid3}>
+          <ol className={styles.grid3} data-progress>
             {STEPS.map((s, i) => (
-              <li key={s.title}>
+              <li key={s.title} data-tilt="8">
                 <Reveal delay={i * 140} className={styles.step}>
                   <div className={styles.num}>{String(i + 1).padStart(2, "0")}</div>
                   <h3>{s.title}</h3>
@@ -181,9 +180,7 @@ export default function Home() {
             <span className={styles.eyebrow} style={{ color: "#fff" }}>
               Safety first
             </span>
-            <h2 className={styles.h2}>
-              Read-only by <em>design</em>
-            </h2>
+            <SplitTitle className={styles.h2} text="Read-only by *design*" />
             <p>Loxley watches the chain for you. It never holds your funds and never signs a transaction.</p>
             <ul>
               <li>No private keys, no seed phrases, ever</li>
@@ -192,11 +189,13 @@ export default function Home() {
             </ul>
           </div>
           <div className={styles.safeImg}>
+            <span className={styles.scan} aria-hidden />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/brand/loxley-hero-orange.png"
               alt="Loxley, an engraved Roman statue wearing headphones, watching a chain dashboard"
               loading="lazy"
+              data-parallax="0.08"
             />
           </div>
         </Reveal>
@@ -204,10 +203,8 @@ export default function Home() {
 
       <footer className={styles.foot}>
         <Reveal className={styles.footCta}>
-          <h2 className={styles.h2}>
-            Ask <em>Loxley</em> anything on-chain
-          </h2>
-          <a href="/app" className={styles.btn} style={{ background: "var(--cream)" }}>
+          <SplitTitle className={styles.h2} text="Ask *Loxley* anything on-chain" />
+          <a href="/app" className={styles.btn} style={{ background: "var(--cream)" }} data-magnetic>
             Launch app <Arrow />
           </a>
         </Reveal>
@@ -246,6 +243,9 @@ export default function Home() {
               Docs
             </a>
           </div>
+        </div>
+        <div className={styles.giant} aria-hidden data-px="0.35">
+          Loxley <em>Loxley</em> Loxley <em>Loxley</em>
         </div>
         <div className={styles.legal}>
           <span>© 2026 LOXLEY · NOT FINANCIAL ADVICE</span>

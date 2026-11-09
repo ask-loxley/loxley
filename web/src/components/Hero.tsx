@@ -131,6 +131,8 @@ export default function Hero() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
+      {/* Statues sit on a stage that lags behind the scroll and leans toward the cursor */}
+      <div className={styles.stage} data-parallax="0.28" data-depth="18">
       {SCENES.map((s, i) => (
         // Plain <img>: these are pre-sized brand renders that cross-fade as stacked layers.
         // eslint-disable-next-line @next/next/no-img-element
@@ -143,6 +145,7 @@ export default function Hero() {
           loading={i === 0 ? "eager" : "lazy"}
         />
       ))}
+      </div>
 
       <header className={styles.nav}>
         <a href="#" className={styles.brand} aria-label="Loxley home">
@@ -154,12 +157,14 @@ export default function Hero() {
           <a href="#safety">Safety</a>
           <a href="/app">Ask Loxley</a>
         </nav>
-        <a href="/app" className={styles.launch}>
+        <a href="/app" className={styles.launch} data-magnetic>
           Launch app <span className={styles.arrow}>→</span>
         </a>
       </header>
 
-      <Conversation key={index} messages={scene.messages} reduced={reduced} />
+      <div className={styles.chatLayer} data-parallax="0.1" data-depth="-10">
+        <Conversation key={index} messages={scene.messages} reduced={reduced} />
+      </div>
 
       <div className={styles.bottom}>
         <span className={styles.live}>

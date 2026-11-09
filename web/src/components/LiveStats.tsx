@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "@/lib/useReducedMotion";
+import SplitTitle from "./SplitTitle";
 import styles from "./LiveStats.module.css";
 
 type Pulse = {
@@ -95,9 +96,7 @@ export default function LiveStats() {
         <span className={styles.eyebrow}>
           <span className={styles.dot} aria-hidden /> Live from the chain
         </span>
-        <h2>
-          Robinhood Chain, <em>right now</em>
-        </h2>
+        <SplitTitle text="Robinhood Chain, *right now*" />
         <p>The same data Loxley reads every time you ask. Refreshed every few minutes.</p>
       </div>
       <div className={styles.grid}>
