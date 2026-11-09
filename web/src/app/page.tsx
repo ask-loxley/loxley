@@ -63,7 +63,6 @@ export default function Home() {
   return (
     <>
       <Motion />
-      <TokenBar />
       <a href="/app?q=How%20ready%20is%20my%20wallet%20for%20a%20Robinhood%20Chain%20airdrop%3F" className={styles.announce}>
         Robinhood Chain airdrop season is on. See how ready your wallet is.
         <b>
@@ -214,6 +213,7 @@ export default function Home() {
         </Reveal>
       </main>
 
+      <TokenBar />
       <footer className={styles.foot}>
         <Reveal className={styles.footCta}>
           <SplitTitle className={styles.h2} text="Ask *Loxley* anything on-chain" />
