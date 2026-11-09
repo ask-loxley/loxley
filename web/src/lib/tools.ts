@@ -3,7 +3,7 @@ import { computePnl } from "./pnl";
 import { findYields, type YieldQuery } from "./yields";
 import { recentTrades, whaleActivity } from "./whales";
 import { airdropScore } from "./airdrop";
-import { searchWeb } from "./webSearch";
+import { readUrl, searchWeb, type Recency } from "./webSearch";
 import { contentBrief, publishDrafts, type BriefKind } from "./content";
 import {
   EXPLORER_URL,
@@ -110,11 +110,27 @@ export const TOOL_DEFINITIONS = [
     function: {
       name: "search_web",
       description:
-        "Search the web for fresh off-chain information: current airdrop or points campaigns, project news, announcements. Returns a short summary with source URLs. Costs money per call: use only when on-chain tools can't answer, at most once or twice per question.",
+        "Search the web for fresh off-chain information: news, announcements, airdrop or points campaigns, prices of stocks or currencies, general facts that may have changed. Returns a short answer plus the top results with snippets and source URLs. Costs a little per call: use it at most once or twice per question, and only when your other tools can't answer.",
       parameters: {
         type: "object",
-        properties: { query: { type: "string", description: "What to look up, e.g. 'Robinhood Chain airdrop points campaigns November 2026'" } },
+        properties: {
+          query: { type: "string", description: "What to look up, e.g. 'Robinhood Chain airdrop points campaigns November 2026'" },
+          recency: { type: "string", enum: ["day", "week", "month", "year"], description: "Only results from this period. Use 'day' or 'week' for news." },
+        },
         required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "read_url",
+      description:
+        "Read the text of a public web page: a link the user pasted, or a search result worth opening for detail (docs, announcements, articles). Returns the page title and up to ~8,000 characters of text. Free.",
+      parameters: {
+        type: "object",
+        properties: { url: { type: "string", description: "Full https:// link" } },
+        required: ["url"],
       },
     },
   },
@@ -263,7 +279,13 @@ export async function runTool(name: string, rawArgs: string): Promise<unknown> {
   if (name === "search_web") {
     const query = typeof (args as { query?: unknown }).query === "string" ? (args as { query: string }).query.trim() : "";
     if (!query) return { error: "Pass a search query." };
-    return searchWeb(query);
+    const recency = (args as { recency?: unknown }).recency;
+    return searchWeb(query, ["day", "week", "month", "year"].includes(recency as string) ? (recency as Recency) : undefined);
+  }
+  if (name === "read_url") {
+    const url = typeof (args as { url?: unknown }).url === "string" ? (args as { url: string }).url : "";
+    if (!url) return { error: "Pass a full https:// link." };
+    return readUrl(url);
   }
   if (name === "find_yields") {
     return findYields({

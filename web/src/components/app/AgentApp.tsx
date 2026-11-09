@@ -80,6 +80,7 @@ const STEP_LABEL: Record<string, string> = {
   get_recent_trades: "Reading recent trades of",
   get_airdrop_score: "Scoring airdrop readiness of",
   search_web: "Searching the web",
+  read_url: "Reading the page",
   get_content_brief: "Gathering data for the post",
   publish_drafts: "Preparing drafts",
 };

@@ -14,7 +14,11 @@ export type ChatMessage =
 
 export class LlmError extends Error {}
 
-export async function chatCompletion(messages: ChatMessage[], tools: readonly unknown[]) {
+export const MAIN_MODEL = () => process.env.OPENROUTER_MODEL || "anthropic/claude-sonnet-5.5";
+// Cheaper model for small talk and simple questions; see runAgent for when it hands over to MAIN_MODEL.
+export const LIGHT_MODEL = () => process.env.OPENROUTER_LIGHT_MODEL || "anthropic/claude-haiku-5.5";
+
+export async function chatCompletion(messages: ChatMessage[], tools: readonly unknown[], model = MAIN_MODEL()) {
   const key = process.env.OPENROUTER_API_KEY;
   if (!key) throw new LlmError("OPENROUTER_API_KEY is missing. Add it to web/.env.local.");
 
@@ -28,7 +32,7 @@ export async function chatCompletion(messages: ChatMessage[], tools: readonly un
       "X-Title": "Loxley",
     },
     body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL || "anthropic/claude-sonnet-5.5",
+      model,
       messages,
       tools,
       tool_choice: "auto",
