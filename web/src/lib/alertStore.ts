@@ -5,7 +5,8 @@ import { getDb, onCloudflare } from "./cf";
 
 export type Watch = {
   id: number;
-  kind: "wallet" | "whale";
+  kind: "wallet" | "whale" | "dev";
+  dev?: string | null; // deployer wallet, for kind "dev"
   address: string;
   label: string | null;
   minUsd: number;

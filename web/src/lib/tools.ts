@@ -6,6 +6,9 @@ import { airdropScore } from "./airdrop";
 import { readUrl, searchWeb, type Recency } from "./webSearch";
 import { stockOverview, stockToken } from "./stocks";
 import { trendingPools } from "./trending";
+import { devActivity } from "./devwatch";
+import { whatIf } from "./whatif";
+import { chainCalendar } from "./calendar";
 import { walletSummary } from "./x402";
 import { contentBrief, publishDrafts, type BriefKind } from "./content";
 import {
@@ -147,6 +150,41 @@ export const TOOL_DEFINITIONS = [
       description:
         "Trending DEX pools on Robinhood Chain right now (24h): pool, DEX, price, 24h change, volume, liquidity and pool age. Loxley pays for this data itself with x402 (about $0.005) and falls back to a free source.",
       parameters: { type: "object", properties: { limit: { type: "number", description: "How many pools (default 10)" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "what_if",
+      description:
+        "What an investment would be worth today if bought N days ago: past and current price from the token's deepest DEX pool on Robinhood Chain, value now and % change. Works with an official stock token ticker (TSLA, NVDA...) or any token address.",
+      parameters: {
+        type: "object",
+        properties: {
+          token: { type: "string", description: "Stock token ticker or token contract address" },
+          amountUsd: { type: "number", description: "Amount invested in USD (default 100)" },
+          daysAgo: { type: "number", description: "How many days ago (default 7, max 365)" },
+        },
+        required: ["token"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_dev_activity",
+      description:
+        "Finds the wallet that launched a token (including through launchpads like Pons) and what it has done with its supply: how much it still holds, how much it sold or moved, with transactions. Use for 'did the dev sell', 'is the dev dumping', rug pull checks. Users can get Telegram alerts with /devwatch.",
+      parameters: { type: "object", properties: { address: { type: "string", description: "Token contract address" } }, required: ["address"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_chain_calendar",
+      description:
+        "Upcoming and recent corporate actions for Robinhood Stock Tokens (dividends, stock splits) from Robinhood's official API, plus the newest token launches on Pons.",
+      parameters: { type: "object", properties: {} },
     },
   },
   {
@@ -330,6 +368,16 @@ export async function runTool(name: string, rawArgs: string): Promise<unknown> {
     return trendingPools(Number.isFinite(limit) ? limit : 10);
   }
   if (name === "get_loxley_wallet") return walletSummary();
+  if (name === "get_chain_calendar") return chainCalendar();
+  if (name === "what_if") {
+    const a = args as { token?: unknown; amountUsd?: unknown; daysAgo?: unknown };
+    if (typeof a.token !== "string" || !a.token.trim()) return { error: "Pass a token ticker or address." };
+    return whatIf({ token: a.token, amountUsd: Number(a.amountUsd) || undefined, daysAgo: Number(a.daysAgo) || undefined });
+  }
+  if (name === "get_dev_activity") {
+    const addr = typeof args.address === "string" ? args.address.trim() : "";
+    return devActivity(addr);
+  }
   if (name === "read_url") {
     const url = typeof (args as { url?: unknown }).url === "string" ? (args as { url: string }).url : "";
     if (!url) return { error: "Pass a full https:// link." };

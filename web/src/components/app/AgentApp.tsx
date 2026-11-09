@@ -18,6 +18,10 @@ import AuditCard from "./AuditCard";
 import PnlCard from "./PnlCard";
 import StockCard from "./StockCard";
 import TrendingCard from "./TrendingCard";
+import { CalendarCard, DevCard, WhatIfCard } from "./InsightCards";
+import type { CalendarReport } from "@/lib/calendar";
+import type { DevReport } from "@/lib/devwatch";
+import type { WhatIfReport } from "@/lib/whatif";
 import type { TrendingReport } from "@/lib/trending";
 import type { StockTokenReport } from "@/lib/stocks";
 import WhaleCard from "./WhaleCard";
@@ -31,9 +35,15 @@ type Card =
   | { kind: "airdrop"; key: string; data: AirdropReport }
   | { kind: "stock"; key: string; data: StockTokenReport }
   | { kind: "trending"; key: string; data: TrendingReport }
+  | { kind: "whatif"; key: string; data: WhatIfReport }
+  | { kind: "dev"; key: string; data: DevReport }
+  | { kind: "calendar"; key: string; data: CalendarReport }
   | { kind: "drafts"; key: string; data: { title: string | null; drafts: Draft[]; warnings: string[] } };
 import RichText from "./RichText";
 import styles from "./AgentApp.module.css";
+
+// Sent as a normal user message, so the answer stays in the conversation.
+const EXPLAIN_SIMPLY = "Explain that again simply, like I'm new to crypto.";
 
 type Step = { id: string; name: string; address?: string; done: boolean; failed?: boolean };
 
@@ -91,6 +101,9 @@ const STEP_LABEL: Record<string, string> = {
   get_stock_tokens: "Checking stock tokens",
   get_trending_pools: "Finding trending pools",
   get_loxley_wallet: "Checking my wallet",
+  what_if: "Running the numbers",
+  get_dev_activity: "Tracing the dev wallet",
+  get_chain_calendar: "Reading the calendar",
   get_content_brief: "Gathering data for the post",
   publish_drafts: "Preparing drafts",
 };
@@ -113,6 +126,9 @@ function toCard(name: string, id: string, d: unknown): Card | null {
   if (name === "find_yields" && "pools" in d) return { kind: "yield", key: id, data: d as { pools: YieldPool[]; note: string } };
   if (name === "get_whale_activity" && "topBuyers" in d) return { kind: "whale", key: id, data: d as WhaleActivity };
   if (name === "get_airdrop_score" && "breakdown" in d) return { kind: "airdrop", key: id, data: d as AirdropReport };
+  if (name === "what_if" && "valueNow" in d) return { kind: "whatif", key: id, data: d as WhatIfReport };
+  if (name === "get_dev_activity" && "verdict" in d) return { kind: "dev", key: id, data: d as DevReport };
+  if (name === "get_chain_calendar" && "upcoming" in d) return { kind: "calendar", key: id, data: d as CalendarReport };
   if (name === "get_trending_pools" && "pools" in d) return { kind: "trending", key: id, data: d as TrendingReport };
   if (name === "get_stock_tokens" && "kind" in d) return { kind: "stock", key: id, data: d as StockTokenReport };
   if (name === "publish_drafts" && "drafts" in d) {
@@ -369,6 +385,12 @@ export default function AgentApp() {
                         <YieldCard key={c.key} pools={c.data.pools} note={c.data.note} />
                       ) : c.kind === "airdrop" ? (
                         <AirdropCard key={c.key} report={c.data} />
+                      ) : c.kind === "whatif" ? (
+                        <WhatIfCard key={c.key} r={c.data} />
+                      ) : c.kind === "dev" ? (
+                        <DevCard key={c.key} r={c.data} />
+                      ) : c.kind === "calendar" ? (
+                        <CalendarCard key={c.key} r={c.data} />
                       ) : c.kind === "trending" ? (
                         <TrendingCard key={c.key} report={c.data} />
                       ) : c.kind === "stock" ? (
@@ -383,6 +405,11 @@ export default function AgentApp() {
                       <div className={styles.prose}>
                         <RichText text={m.text} />
                       </div>
+                    )}
+                    {m.text && !m.pending && !busy && i === messages.length - 1 && (
+                      <button type="button" className={styles.simple} onClick={() => send(EXPLAIN_SIMPLY)}>
+                        Explain simply
+                      </button>
                     )}
                     {m.pending && !m.text && m.steps.every((s) => s.done) && (
                       <div className={styles.thinking} aria-label="Thinking">

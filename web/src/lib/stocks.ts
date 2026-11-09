@@ -71,7 +71,7 @@ export type StockTokenReport =
 // ---------- Robinhood API ----------
 
 // Some networks (and ISPs) block api.robinhood.com; Jina Reader relays the same JSON as a fallback.
-async function rhGet<T>(path: string): Promise<T> {
+export async function rhGet<T>(path: string): Promise<T> {
   try {
     const res = await fetch(`${RH_API}${path}`, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(10_000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);

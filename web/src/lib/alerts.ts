@@ -2,6 +2,8 @@ import { runAgent } from "./agent";
 import { airdropScore } from "./airdrop";
 import { auditContract } from "./audit";
 import { loxleyToken } from "./token";
+import { devOutgoing, findDeployer } from "./devwatch";
+import { chainCalendar } from "./calendar";
 import { loadState, saveState, type AlertState, type Watch } from "./alertStore";
 import { EXPLORER_URL, getToken, getTokenTransfers, getTransfersOfToken, isAddress, type TokenTransfer } from "./blockscout";
 import { coinId, currentPrices } from "./prices";
@@ -45,6 +47,8 @@ const HELP = [
   "/unwatch &lt;id&gt; · stop a watch",
   "/audit &lt;contract&gt; · quick safety check",
   "/airdrop &lt;wallet&gt; · airdrop readiness score",
+  "/devwatch &lt;token&gt; · alert when the token's dev sells, moves or burns",
+  "/calendar · stock token dividends and splits, new Pons launches",
   "/ca · the official $LOXLEY contract",
   "",
   "Or just ask me anything about Robinhood Chain, like you would on the web app.",
@@ -52,7 +56,11 @@ const HELP = [
 
 /* ---------------- commands ---------------- */
 
-async function newestTransfer(kind: Watch["kind"], address: string) {
+async function newestTransfer(kind: Watch["kind"], address: string, dev?: string | null) {
+  if (kind === "dev") {
+    const items = dev ? await devOutgoing(dev, address) : [];
+    return items[0] ? Date.parse(items[0].timestamp) : Date.now();
+  }
   const page = kind === "wallet" ? await getTokenTransfers(address, 1) : await getTransfersOfToken(address, 1);
   const newest = page.items[0];
   return newest ? Date.parse(newest.timestamp) : Date.now();
@@ -61,18 +69,26 @@ async function newestTransfer(kind: Watch["kind"], address: string) {
 async function addWatch(chatId: number, kind: Watch["kind"], args: string[]) {
   const address = (args[0] ?? "").toLowerCase();
   if (!isAddress(address)) {
-    return sendMessage(chatId, `Send a full 0x address, e.g. <code>/${kind === "wallet" ? "watch" : "whale"} 0x…</code>`);
+    return sendMessage(chatId, `Send a full 0x address, e.g. <code>/${kind === "wallet" ? "watch" : kind === "dev" ? "devwatch" : "whale"} 0x…</code>`);
   }
   const minUsd = kind === "whale" ? Math.max(10, Number(args[1]) || 1000) : 0;
   const label = kind === "wallet" ? args.slice(1).join(" ").slice(0, 40) || null : null;
 
   let symbol: string | null = null;
+  let dev: string | null = null;
+  if (kind === "dev") {
+    const token = await getToken(address);
+    if (!token) return sendMessage(chatId, "I couldn't find that token on Robinhood Chain. New tokens can take a few minutes to index.");
+    symbol = token.symbol ?? null;
+    dev = (await findDeployer(address)).dev?.toLowerCase() ?? null;
+    if (!dev) return sendMessage(chatId, "I couldn't identify the wallet that launched this token.");
+  }
   if (kind === "whale") {
     const token = await getToken(address);
     if (!token) return sendMessage(chatId, "I couldn't find that token on Robinhood Chain.");
     symbol = token.symbol ?? null;
   }
-  const lastSeenAt = await newestTransfer(kind, address);
+  const lastSeenAt = await newestTransfer(kind, address, dev);
 
   const result = await withState(async (s) => {
     if (s.watches.length >= MAX_WATCHES) return "full" as const;
@@ -83,6 +99,7 @@ async function addWatch(chatId: number, kind: Watch["kind"], args: string[]) {
       address,
       label: label ?? symbol,
       minUsd,
+      dev,
       lastSeenAt,
       seenTx: [],
       createdAt: Date.now(),
@@ -94,7 +111,9 @@ async function addWatch(chatId: number, kind: Watch["kind"], args: string[]) {
   if (result === "full") return sendMessage(chatId, `You already have ${MAX_WATCHES} watches. Remove one with /unwatch first.`);
   if (result === "dupe") return sendMessage(chatId, "You're already watching that.");
   const what =
-    kind === "wallet"
+    kind === "dev"
+      ? `the dev of <b>${escapeHtml(result.label ?? short(address))}</b> (<code>${short(dev ?? "")}</code>). I'll ping you when it sells, moves or burns supply.`
+      : kind === "wallet"
       ? `wallet <b>${escapeHtml(result.label ?? short(address))}</b>. I'll ping you when it trades.`
       : `<b>${escapeHtml(result.label ?? short(address))}</b> for single buys or sells over ${usd(minUsd)}.`;
   return sendMessage(chatId, `Watch #${result.id} set: ${what}`);
@@ -104,7 +123,9 @@ async function listWatches(chatId: number) {
   const s = await loadState();
   if (!s.watches.length) return sendMessage(chatId, "No watches yet. Try /watch or /whale.");
   const lines = s.watches.map((w) =>
-    w.kind === "wallet"
+    w.kind === "dev"
+      ? `#${w.id} · dev of ${escapeHtml(w.label ?? short(w.address))} <code>${short(w.dev ?? "")}</code>`
+      : w.kind === "wallet"
       ? `#${w.id} · wallet ${escapeHtml(w.label ?? "")} <code>${short(w.address)}</code>`
       : `#${w.id} · whale ${escapeHtml(w.label ?? short(w.address))} · over ${usd(w.minUsd)}`,
   );
@@ -213,6 +234,19 @@ async function handleUpdate(u: TgUpdate) {
         return await quickAudit(chatId, args[0]);
       case "/airdrop":
         return await quickAirdrop(chatId, args[0]);
+      case "/devwatch":
+        return await addWatch(chatId, "dev", args);
+      case "/calendar": {
+        await sendTyping(chatId);
+        const c = await chainCalendar();
+        const ev = c.upcoming.slice(0, 6).map((e) => `${e.date ?? "TBA"} · <b>${escapeHtml(e.symbol)}</b> ${e.kind}: ${escapeHtml(e.detail)}`);
+        const ln = c.launches.slice(0, 5).map((l) => `<a href="${l.url}">${escapeHtml(l.symbol)}</a> · ${usd(l.liquidityUsd)} liquidity`);
+        return await sendMessage(chatId, [
+          "<b>Stock token calendar</b>", ...(ev.length ? ev : ["Nothing scheduled right now."]),
+          "", "<b>New on Pons</b>", ...(ln.length ? ln : ["No new launches in the feed."]),
+          "", "Dividends are reinvested into the token. New launches are unaudited: try /audit first.",
+        ].join("\n"));
+      }
       case "/ca": {
         const t = await loxleyToken();
         return await sendMessage(
@@ -356,6 +390,31 @@ async function checkWhale(w: Watch, chatId: number) {
   advance(w, items);
 }
 
+async function checkDev(w: Watch, chatId: number) {
+  if (!w.dev) return;
+  const items = await devOutgoing(w.dev, w.address);
+  const news = fresh(w, items);
+  if (!news.length) return advance(w, items);
+  let sent = 0;
+  for (const t of news) {
+    if (sent >= 5) break;
+    const to = t.to.hash.toLowerCase();
+    const burn = to === ZERO || to === "0x000000000000000000000000000000000000dead";
+    const what = burn ? "burned" : t.to.is_contract ? "sold (sent to a contract)" : "moved to another wallet";
+    const qty = toQty(t.total?.value, t.total?.decimals ?? t.token.decimals);
+    await sendMessage(
+      chatId,
+      [
+        `<b>Dev ${what}</b> · ${escapeHtml(w.label ?? short(w.address))}`,
+        `${qty.toLocaleString("en-US", { maximumFractionDigits: 2 })} ${escapeHtml(t.token.symbol ?? "")}${burn ? "" : ` to <a href="${EXPLORER_URL}/address/${t.to.hash}">${short(t.to.hash)}</a>`}`,
+        `<a href="${EXPLORER_URL}/tx/${t.transaction_hash}">View tx</a> · watch #${w.id}`,
+      ].join("\n"),
+    );
+    sent++;
+  }
+  advance(w, items);
+}
+
 /** Runs every watch once and sends alerts for anything new. */
 export async function checkWatches() {
   const s = await loadState();
@@ -365,6 +424,7 @@ export async function checkWatches() {
     const copy: Watch = { ...w, seenTx: [...w.seenTx] };
     try {
       if (w.kind === "wallet") await checkWallet(copy, s.ownerChatId);
+      else if (w.kind === "dev") await checkDev(copy, s.ownerChatId);
       else await checkWhale(copy, s.ownerChatId);
       updated.set(w.id, copy);
     } catch (err) {

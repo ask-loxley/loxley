@@ -3,8 +3,10 @@
 import type { AuditReport, Severity } from "./audit";
 import { stamp, type PostImageSpec, type Tone } from "./postImage";
 import type { StockQuote, StockTokenReport } from "./stocks";
+import type { DevReport } from "./devwatch";
 import type { TrendingReport } from "./trending";
 import type { WhaleActivity } from "./whales";
+import type { WhatIfReport } from "./whatif";
 import type { YieldPool } from "./yields";
 
 const usd = (n: number | null | undefined) =>
@@ -163,6 +165,55 @@ export function trendingSpec(r: TrendingReport): PostImageSpec {
           tone: p.change24hPct == null ? "plain" : p.change24hPct >= 0 ? "ok" : p.change24hPct > -15 ? "md" : "hi",
         },
       })),
+    },
+  };
+}
+
+export function whatIfSpec(r: WhatIfReport): PostImageSpec {
+  const up = r.changePct >= 0;
+  return {
+    eyebrow: `What if · ${r.daysAgo} days ago`,
+    title: `$${r.amountUsd.toLocaleString("en-US")} of ${r.symbol}, then and now`,
+    subtitle: `Bought on ${r.boughtOn}, valued at today's DEX price on Robinhood Chain.`,
+    art: up ? "blue" : "orange",
+    footnote: `${stamp()} · GeckoTerminal · Past returns are not a forecast`,
+    filename: `loxley-whatif-${r.symbol.toLowerCase().replace(/[^a-z0-9]/g, "")}-${day()}.png`,
+    body: {
+      type: "stat",
+      value: "$" + r.valueNow.toLocaleString("en-US", { maximumFractionDigits: r.valueNow < 10 ? 2 : 0 }),
+      verdict: `${up ? "+" : ""}${r.changePct.toFixed(2)}%`,
+      tone: up ? "ok" : "hi",
+      points: [
+        { text: `Price then ${usd(r.priceThen)}, now ${usd(r.priceNow)}`, tone: "plain" },
+        { text: `Deepest pool: ${r.pool}`, tone: "plain" },
+        { text: "Ignores fees, slippage and gas.", tone: "md" },
+      ],
+    },
+  };
+}
+
+export function devSpec(r: DevReport): PostImageSpec {
+  const label = { quiet: "quiet", burned: "burned", moving: "moved supply", selling: "selling", unknown: "unknown" }[r.verdict];
+  const tone: Tone = r.verdict === "selling" ? "hi" : r.verdict === "moving" || r.verdict === "unknown" ? "md" : "ok";
+  const moved = Math.max(0, r.sentPct - r.soldPct - r.burnedPct);
+  return {
+    eyebrow: `Dev watch · ${r.symbol ?? short(r.token)}`,
+    title: `What did the ${r.symbol ?? "token"} dev do?`,
+    subtitle: r.dev ? `Deployer ${short(r.dev)}${r.viaFactory ? ` · launched via ${r.viaFactory}` : ""}` : undefined,
+    art: "pink",
+    footnote: `${stamp()} · Blockscout · Signals, not proof`,
+    filename: `loxley-dev-${r.token.slice(0, 8)}.png`,
+    body: {
+      type: "stat",
+      value: `${r.soldPct.toFixed(1)}%`,
+      unit: " sold",
+      verdict: label,
+      tone,
+      points: [
+        { text: `Holds ${r.holdsPct == null ? "unknown" : r.holdsPct.toFixed(2) + "%"} of supply now`, tone: "plain" },
+        { text: `Burned ${r.burnedPct.toFixed(2)}% of supply`, tone: r.burnedPct > 0 ? "ok" : "plain" },
+        { text: `Moved ${moved.toFixed(2)}% to other wallets`, tone: moved >= 1 ? "md" : "plain" },
+      ],
     },
   };
 }

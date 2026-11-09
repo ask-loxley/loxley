@@ -227,3 +227,10 @@ export function percentOf(part: string, total: string | null | undefined): numbe
     return 0;
   }
 }
+
+export type AddressDetail = AddressInfo & { creator_address_hash?: string | null; creation_transaction_hash?: string | null; creation_tx_hash?: string | null };
+export const getAddressDetail = (a: string) => get<AddressDetail>(`/addresses/${a}`);
+export const getTransaction = (hash: string) => get<Transaction & { method?: string | null }>(`/transactions/${hash}`);
+/** Transfers of one token in or out of one address, newest first. */
+export const getTokenTransfersOf = (a: string, token: string, maxPages = 2) =>
+  allPages<TokenTransfer>(`/addresses/${a}/token-transfers`, { type: "ERC-20", token }, maxPages);
