@@ -140,14 +140,19 @@ export async function walletUsdcBalance(): Promise<number | null> {
   const address = agentWalletAddress();
   if (!address) return null;
   const data = "0x70a08231" + address.slice(2).toLowerCase().padStart(64, "0");
-  const res = await fetch(process.env.BASE_RPC_URL || "https://mainnet.base.org", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to: USDC_BASE, data }, "latest"] }),
-    signal: AbortSignal.timeout(10_000),
-  }).catch(() => null);
-  const body = (await res?.json().catch(() => null)) as { result?: string } | null;
-  return body?.result ? Number(BigInt(body.result)) / 1e6 : null;
+  // Some public RPCs refuse requests from cloud IPs, so try a few in turn.
+  const rpcs = [process.env.BASE_RPC_URL, "https://base-rpc.publicnode.com", "https://base.llamarpc.com", "https://mainnet.base.org"].filter(Boolean) as string[];
+  for (const rpc of rpcs) {
+    const res = await fetch(rpc, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to: USDC_BASE, data }, "latest"] }),
+      signal: AbortSignal.timeout(8_000),
+    }).catch(() => null);
+    const body = (await res?.json().catch(() => null)) as { result?: string } | null;
+    if (body?.result && /^0x[0-9a-f]+$/i.test(body.result)) return Number(BigInt(body.result)) / 1e6;
+  }
+  return null;
 }
 
 export type WalletSummary = {
