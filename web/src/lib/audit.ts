@@ -7,6 +7,7 @@ import {
   getTokenHolders,
   percentOf,
 } from "./blockscout";
+import { officialStockTokens } from "./stocks";
 
 export type Severity = "high" | "medium" | "low" | "info";
 
@@ -108,6 +109,52 @@ const PATTERNS: { id: string; severity: Severity; re: RegExp; title: string; det
 ];
 
 const WEIGHT: Record<Severity, number> = { high: 25, medium: 10, low: 3, info: 0 };
+
+/** Flags tokens that copy a Robinhood Stock Token's ticker or name, and confirms official ones. */
+async function stockTokenFindings(addr: string, name: string, symbol: string): Promise<Finding[]> {
+  const list = await officialStockTokens().catch(() => null);
+  if (!list) return [];
+  const official = list.find((t) => t.address.toLowerCase() === addr);
+  if (official) {
+    return [
+      {
+        id: "stock-official",
+        severity: "info",
+        title: `Official Robinhood Stock Token (${official.symbol})`,
+        detail: "This address is on Robinhood's official Stock Token list. Holder and owner findings reflect how Robinhood issues these tokens.",
+      },
+    ];
+  }
+  const sym = symbol.replace(/^\$/, "").trim().toUpperCase();
+  const lower = name.toLowerCase();
+  const mentionsRobinhood = lower.includes("robinhood");
+  for (const t of list) {
+    const company = t.name.split(" •")[0].trim().toLowerCase();
+    const sameTicker = sym.length >= 2 && sym === t.symbol.toUpperCase();
+    const mentionsCompany = company.length >= 4 && lower.includes(company);
+    if ((sameTicker && (mentionsCompany || mentionsRobinhood)) || (mentionsRobinhood && mentionsCompany)) {
+      return [
+        {
+          id: "stock-impostor",
+          severity: "high",
+          title: `Pretends to be the ${t.symbol} stock token`,
+          detail: `It copies the name or ticker of a Robinhood Stock Token but is not on Robinhood's official list. The official ${t.symbol} token is ${t.address}.`,
+        },
+      ];
+    }
+    if (sameTicker && sym.length >= 3) {
+      return [
+        {
+          id: "stock-ticker",
+          severity: "medium",
+          title: `Uses the ${t.symbol} stock ticker`,
+          detail: `This is not the Robinhood ${t.symbol} Stock Token (official address ${t.address}). Make sure you're buying what you think you are.`,
+        },
+      ];
+    }
+  }
+  return [];
+}
 
 export async function auditContract(address: string): Promise<AuditReport> {
   const addr = address.toLowerCase();
@@ -226,6 +273,8 @@ export async function auditContract(address: string): Promise<AuditReport> {
       });
     }
   }
+
+  if (tok) findings.push(...(await stockTokenFindings(addr, tok.name ?? "", tok.symbol ?? "")));
 
   const penalty = findings.reduce((s, f) => s + WEIGHT[f.severity], 0);
   const score = Math.max(0, 100 - penalty);

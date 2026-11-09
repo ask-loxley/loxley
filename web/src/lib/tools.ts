@@ -4,6 +4,7 @@ import { findYields, type YieldQuery } from "./yields";
 import { recentTrades, whaleActivity } from "./whales";
 import { airdropScore } from "./airdrop";
 import { readUrl, searchWeb, type Recency } from "./webSearch";
+import { stockOverview, stockToken } from "./stocks";
 import { contentBrief, publishDrafts, type BriefKind } from "./content";
 import {
   EXPLORER_URL,
@@ -118,6 +119,22 @@ export const TOOL_DEFINITIONS = [
           recency: { type: "string", enum: ["day", "week", "month", "year"], description: "Only results from this period. Use 'day' or 'week' for news." },
         },
         required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_stock_tokens",
+      description:
+        "Robinhood Stock Tokens (tokenized US stocks and ETFs like TSLA, NVDA, SPY) on Robinhood Chain. Pass a ticker to get the official Robinhood price of the underlying stock next to the token's DEX price, the premium or discount, liquidity and the US market session. Pass an address to check whether a token is the official Robinhood Stock Token or a lookalike. Pass neither for the most traded stock tokens and their premiums. Free.",
+      parameters: {
+        type: "object",
+        properties: {
+          symbol: { type: "string", description: "Ticker, e.g. TSLA" },
+          address: { type: "string", description: "Token contract address to verify" },
+          limit: { type: "number", description: "Rows for the overview (default 10)" },
+        },
       },
     },
   },
@@ -281,6 +298,12 @@ export async function runTool(name: string, rawArgs: string): Promise<unknown> {
     if (!query) return { error: "Pass a search query." };
     const recency = (args as { recency?: unknown }).recency;
     return searchWeb(query, ["day", "week", "month", "year"].includes(recency as string) ? (recency as Recency) : undefined);
+  }
+  if (name === "get_stock_tokens") {
+    const { symbol, address, limit } = args as { symbol?: unknown; address?: unknown; limit?: unknown };
+    if (typeof address === "string" && address.trim()) return stockToken({ address: address.trim() });
+    if (typeof symbol === "string" && symbol.trim()) return stockToken({ symbol: symbol.trim() });
+    return stockOverview(Number.isFinite(Number(limit)) ? Number(limit) : 10);
   }
   if (name === "read_url") {
     const url = typeof (args as { url?: unknown }).url === "string" ? (args as { url: string }).url : "";

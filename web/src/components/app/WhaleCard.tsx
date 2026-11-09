@@ -1,5 +1,7 @@
 import type { WhaleActivity, WhaleRow } from "@/lib/whales";
 import styles from "./AgentApp.module.css";
+import { whaleSpec } from "@/lib/postSpecs";
+import ShareImage from "./ShareImage";
 
 const EXPLORER = "https://robinhoodchain.blockscout.com/address/";
 const usd = (n: number) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
@@ -58,6 +60,7 @@ export default function WhaleCard({ data }: { data: WhaleActivity }) {
       <a className={styles.explorer} href={data.explorerUrl} target="_blank" rel="noopener noreferrer">
         View token on explorer ↗
       </a>
+      <ShareImage make={() => whaleSpec(data)} />
     </div>
   );
 }

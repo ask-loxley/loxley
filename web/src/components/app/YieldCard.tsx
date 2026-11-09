@@ -1,5 +1,7 @@
 import type { YieldPool } from "@/lib/yields";
 import styles from "./AgentApp.module.css";
+import { yieldSpec } from "@/lib/postSpecs";
+import ShareImage from "./ShareImage";
 
 const compactUsd = (n: number) =>
   "$" + Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(n);
@@ -53,6 +55,7 @@ export default function YieldCard({ pools, note }: { pools: YieldPool[]; note: s
         </div>
       )}
       <p className={styles.notesText}>{note} Source: DefiLlama.</p>
+      {pools.length > 0 && <ShareImage make={() => yieldSpec(pools)} />}
     </div>
   );
 }

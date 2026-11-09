@@ -1,5 +1,7 @@
 import type { AuditReport, Severity } from "@/lib/audit";
 import styles from "./AgentApp.module.css";
+import { auditSpec } from "@/lib/postSpecs";
+import ShareImage from "./ShareImage";
 
 const SEVERITY_LABEL: Record<Severity, string> = { high: "High", medium: "Medium", low: "Low", info: "Info" };
 
@@ -54,6 +56,7 @@ export default function AuditCard({ report }: { report: AuditReport }) {
       <a className={styles.explorer} href={report.explorerUrl} target="_blank" rel="noopener noreferrer">
         View on explorer ↗
       </a>
+      <ShareImage make={() => auditSpec(report)} />
     </div>
   );
 }
