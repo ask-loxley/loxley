@@ -1,0 +1,108 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  padding: 12px 24px;
+  background: var(--teal);
+  color: var(--cream);
+  font-size: 14px;
+}
+
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.live i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #7dffb5;
+  box-shadow: 0 0 0 0 rgba(125, 255, 181, 0.6);
+  animation: ping 1.6s ease-out infinite;
+}
+
+@keyframes ping {
+  to {
+    box-shadow: 0 0 0 8px rgba(125, 255, 181, 0);
+  }
+}
+
+.ca {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.label {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vermilion);
+}
+
+.ca code {
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.ca button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgba(243, 240, 230, 0.4);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cream);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ca button:hover {
+  border-color: var(--cream);
+}
+
+.links {
+  display: inline-flex;
+  gap: 14px;
+}
+
+.links a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.warn {
+  font-size: 12px;
+  color: #9fb0ac;
+}
+
+/* app sidebar version: stacked */
+.compact {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(232, 84, 44, 0.6);
+  margin: 18px 0 4px;
+  font-size: 13px;
+}
+
+.compact .ca {
+  flex-wrap: wrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live i {
+    animation: none;
+  }
+}

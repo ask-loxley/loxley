@@ -6,6 +6,7 @@ import type { AgentEvent } from "@/lib/agent";
 import type { AirdropReport } from "@/lib/airdrop";
 import type { AuditReport } from "@/lib/audit";
 import Socials from "../Socials";
+import TokenBar from "../TokenBar";
 import Wordmark from "../Wordmark";
 import AirdropCard from "./AirdropCard";
 import DraftCard from "./DraftCard";
@@ -286,6 +287,7 @@ export default function AgentApp() {
             </a>
           </div>
         )}
+        <TokenBar compact />
         <div className={styles.tg}>
           <h2 className={styles.sideTitle}>Loxley&apos;s wallet</h2>
           <p>Loxley pays for some data itself with x402. Every payment is public.</p>

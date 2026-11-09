@@ -1,6 +1,7 @@
 import { runAgent } from "./agent";
 import { airdropScore } from "./airdrop";
 import { auditContract } from "./audit";
+import { loxleyToken } from "./token";
 import { loadState, saveState, type AlertState, type Watch } from "./alertStore";
 import { EXPLORER_URL, getToken, getTokenTransfers, getTransfersOfToken, isAddress, type TokenTransfer } from "./blockscout";
 import { coinId, currentPrices } from "./prices";
@@ -44,6 +45,7 @@ const HELP = [
   "/unwatch &lt;id&gt; · stop a watch",
   "/audit &lt;contract&gt; · quick safety check",
   "/airdrop &lt;wallet&gt; · airdrop readiness score",
+  "/ca · the official $LOXLEY contract",
   "",
   "Or just ask me anything about Robinhood Chain, like you would on the web app.",
 ].join("\n");
@@ -211,6 +213,20 @@ async function handleUpdate(u: TgUpdate) {
         return await quickAudit(chatId, args[0]);
       case "/airdrop":
         return await quickAirdrop(chatId, args[0]);
+      case "/ca": {
+        const t = await loxleyToken();
+        return await sendMessage(
+          chatId,
+          t
+            ? `<b>Official $LOXLEY contract</b> (Robinhood Chain)
+<code>${t.ca}</code>
+
+${t.pons ? `<a href="${t.pons}">Pons</a> · ` : ""}<a href="${t.explorerUrl}">Explorer</a> · <a href="${t.dexscreenerUrl}">Chart</a>
+
+Only this address is official. Not financial advice.`
+            : "$LOXLEY has not launched yet. The official contract will be posted only by @askloxleycom on X and on askloxley.com.",
+        );
+      }
       default:
         if (cmd.startsWith("/")) return await sendMessage(chatId, HELP);
         return await askAgent(chatId, msg.text);

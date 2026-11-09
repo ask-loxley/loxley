@@ -6,6 +6,7 @@ import Motion from "@/components/Motion";
 import Reveal from "@/components/Reveal";
 import Socials, { SOCIALS } from "@/components/Socials";
 import SplitTitle from "@/components/SplitTitle";
+import TokenBar from "@/components/TokenBar";
 import Wordmark from "@/components/Wordmark";
 import styles from "./page.module.css";
 
@@ -62,6 +63,7 @@ export default function Home() {
   return (
     <>
       <Motion />
+      <TokenBar />
       <a href="/app?q=How%20ready%20is%20my%20wallet%20for%20a%20Robinhood%20Chain%20airdrop%3F" className={styles.announce}>
         Robinhood Chain airdrop season is on. See how ready your wallet is.
         <b>

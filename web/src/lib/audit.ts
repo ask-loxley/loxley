@@ -8,6 +8,7 @@ import {
   percentOf,
 } from "./blockscout";
 import { officialStockTokens } from "./stocks";
+import { loxleyToken } from "./token";
 
 export type Severity = "high" | "medium" | "low" | "info";
 
@@ -109,6 +110,23 @@ const PATTERNS: { id: string; severity: Severity; re: RegExp; title: string; det
 ];
 
 const WEIGHT: Record<Severity, number> = { high: 25, medium: 10, low: 3, info: 0 };
+
+/** Confirms the official $LOXLEY contract and flags tokens that use the Loxley name without being it. */
+async function loxleyTokenFindings(addr: string, name: string, symbol: string): Promise<Finding[]> {
+  const official = await loxleyToken().catch(() => null);
+  if (official && official.ca.toLowerCase() === addr) {
+    return [{ id: "loxley-official", severity: "info", title: "Official $LOXLEY contract", detail: "This is the $LOXLEY contract posted by @askloxleycom and on askloxley.com. Loxley is affiliated with this token." }];
+  }
+  if (!/loxley/i.test(`${name} ${symbol}`)) return [];
+  return [{
+    id: "loxley-impostor",
+    severity: "high",
+    title: "Not the official $LOXLEY",
+    detail: official
+      ? `It uses the Loxley name, but the official $LOXLEY contract is ${official.ca}.`
+      : "It uses the Loxley name, but $LOXLEY has not launched yet. The official contract will only be posted by @askloxleycom and on askloxley.com.",
+  }];
+}
 
 /** Flags tokens that copy a Robinhood Stock Token's ticker or name, and confirms official ones. */
 async function stockTokenFindings(addr: string, name: string, symbol: string): Promise<Finding[]> {
@@ -275,6 +293,7 @@ export async function auditContract(address: string): Promise<AuditReport> {
   }
 
   if (tok) findings.push(...(await stockTokenFindings(addr, tok.name ?? "", tok.symbol ?? "")));
+  if (tok) findings.push(...(await loxleyTokenFindings(addr, tok.name ?? "", tok.symbol ?? "")));
 
   const penalty = findings.reduce((s, f) => s + WEIGHT[f.severity], 0);
   const score = Math.max(0, 100 - penalty);

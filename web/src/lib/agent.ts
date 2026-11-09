@@ -1,5 +1,6 @@
 import { chatCompletion, LIGHT_MODEL, MAIN_MODEL, type ChatMessage } from "./llm";
 import { runTool, TOOL_DEFINITIONS } from "./tools";
+import { tokenPromptNote } from "./token";
 
 export type AgentEvent =
   | { type: "tool_start"; id: string; name: string; address?: string }
@@ -54,7 +55,9 @@ export async function runAgent(
   history: { role: "user" | "assistant"; content: string }[],
   emit: (e: AgentEvent) => void,
 ) {
-  const messages: ChatMessage[] = [{ role: "system", content: SYSTEM_PROMPT }, ...history];
+  const tokenNote = await tokenPromptNote().catch(() => "");
+  const messages: ChatMessage[] = [{ role: "system", content: `${SYSTEM_PROMPT}
+${tokenNote}` }, ...history];
 
   // Cost routing: the light model answers small talk and simple questions and picks the first tools.
   // Once any tool runs, the main model takes over to read the results and write the answer.
