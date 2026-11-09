@@ -17,7 +17,7 @@ type Scene = {
 const SCENES: Scene[] = [
   {
     color: "var(--blue)",
-    image: "/brand/loxley-hero-blue.png",
+    image: "/brand/loxley-hero-blue-typing.webp",
     alt: "Loxley, an engraved Roman statue wearing headphones, typing on a keyboard",
     messages: [
       { from: "you", text: "Is this token safe to buy? 0x9f…c2" },

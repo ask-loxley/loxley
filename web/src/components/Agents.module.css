@@ -1,3 +1,33 @@
+/* Wide screens: the section pins while the page scrolls through one step per agent */
+.track {
+  position: relative;
+  height: calc(100vh + var(--steps) * var(--step));
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.sticky .section {
+  flex: 1;
+  padding-top: 40px;
+  padding-bottom: 40px;
+  align-items: center;
+}
+
+.sticky .title {
+  margin-bottom: 28px;
+}
+
+.sticky .pic {
+  height: min(640px, calc(100vh - 80px));
+}
+
 .section {
   display: grid;
   grid-template-columns: 1fr 520px;
@@ -129,6 +159,10 @@
     transform 1.1s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
+.pic img.shift {
+  left: -96px;
+}
+
 .pic img.picOn {
   opacity: 1;
   filter: none;
@@ -136,42 +170,93 @@
   animation: float 7s ease-in-out 1.1s infinite;
 }
 
-/* big agent number that rolls in each time the selection changes */
-.picNum {
+/* tagline for the current scene, rising in each time the scene changes */
+.caption {
   position: absolute;
   left: 28px;
-  bottom: 18px;
-  font-family: var(--font-serif), serif;
-  font-style: italic;
-  font-size: 120px;
-  line-height: 1;
-  color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 6px 30px rgba(0, 0, 0, 0.18);
-  animation: numIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  right: 28px;
+  bottom: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #fff;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.22);
   pointer-events: none;
 }
 
-@keyframes numIn {
+.caption > * {
+  animation: capIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.captionNum {
+  font-family: var(--font-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  animation-delay: 0.05s !important;
+}
+
+.tagline {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 64px;
+  line-height: 0.95;
+  animation-delay: 0.12s !important;
+}
+
+.sub {
+  max-width: 340px;
+  font-size: 15px;
+  line-height: 1.45;
+  opacity: 0.95;
+  animation-delay: 0.22s !important;
+}
+
+@keyframes capIn {
   from {
     opacity: 0;
-    transform: translateY(40%) rotate(6deg);
+    transform: translateY(28px);
+    filter: blur(6px);
   }
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-14px) rotate(-0.6deg);
-  }
+/* three thin bars: which scene of three is showing */
+.progress {
+  position: absolute;
+  top: 22px;
+  left: 28px;
+  right: 28px;
+  display: flex;
+  gap: 8px;
+}
+
+.progress i {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+  overflow: hidden;
+}
+
+.progress i::after {
+  content: "";
+  display: block;
+  height: 100%;
+  background: #fff;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.progress .progressOn::after {
+  transform: scaleX(1);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .pic img,
   .pic img.picOn,
-  .picNum {
+  .caption > *,
+  .progress i::after {
     animation: none;
     transition: none;
     filter: none;
@@ -197,6 +282,10 @@
     height: 100%;
     object-fit: cover;
     object-position: center top;
+  }
+  .pic img.shift {
+    left: 0;
+    object-position: 85% top;
   }
   .title {
     font-size: 44px;

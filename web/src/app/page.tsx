@@ -115,9 +115,7 @@ export default function Home() {
           </div>
         </div>
 
-        <Reveal>
-          <Agents />
-        </Reveal>
+        <Agents />
 
         <Reveal>
           <LiveStats />
