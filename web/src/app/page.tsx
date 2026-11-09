@@ -160,7 +160,7 @@ export default function Home() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/brand/loxley-standing.webp"
-              alt="Loxley, a full-length engraved Roman statue wearing headphones, holding a book with his own portrait on the cover"
+              alt="Loxley, a full-length engraved Roman statue wearing headphones, holding a book with a feather on the cover"
               loading="lazy"
               data-parallax="0.06"
             />
