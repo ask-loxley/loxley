@@ -133,11 +133,16 @@ export async function dexMarkets(addresses: string[]): Promise<Map<string, DexMa
   const out = new Map<string, DexMarket>();
   for (let i = 0; i < addresses.length; i += 30) {
     const batch = addresses.slice(i, i + 30);
-    const res = await fetch(`https://api.dexscreener.com/tokens/v1/robinhood/${batch.join(",")}`, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(15_000),
-    }).catch(() => null);
-    const pairs = res?.ok ? ((await res.json().catch(() => [])) as DexPair[]) : [];
+    // One retry: DexScreener occasionally drops a request, and an empty answer would read as "no DEX price".
+    let pairs: DexPair[] = [];
+    for (let attempt = 0; attempt < 2 && !pairs.length; attempt++) {
+      const res = await fetch(`https://api.dexscreener.com/tokens/v1/robinhood/${batch.join(",")}`, {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(15_000),
+      }).catch(() => null);
+      pairs = res?.ok ? ((await res.json().catch(() => [])) as DexPair[]) : [];
+      if (!pairs.length && attempt === 0) await new Promise((r) => setTimeout(r, 600));
+    }
     for (const addr of batch) {
       const mine = pairs.filter(
         (p) => p.baseToken?.address?.toLowerCase() === addr.toLowerCase() && Number(p.priceUsd) > 0 && (p.liquidity?.usd ?? 0) >= MIN_POOL_LIQUIDITY,

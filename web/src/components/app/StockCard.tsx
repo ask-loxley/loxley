@@ -140,7 +140,7 @@ export default function StockCard({ report }: { report: StockTokenReport }) {
         </a>
       </p>
       <p className={styles.notesText}>{report.notes.join(" ")} Sources: Robinhood, DexScreener.</p>
-      <ShareImage make={() => stockSpec(report)} />
+      {report.dex && <ShareImage make={() => stockSpec(report)} />}
     </div>
   );
 }
