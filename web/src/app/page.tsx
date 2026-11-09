@@ -239,6 +239,7 @@ export default function Home() {
             <a href="/app">Launch app</a>
             <a href="#how">How it works</a>
             <a href="#safety">Safety</a>
+            <a href="/wallet">Loxley&apos;s wallet</a>
             <a href={`${SOCIALS.github.url}#readme`} target="_blank" rel="noopener noreferrer">
               Docs
             </a>

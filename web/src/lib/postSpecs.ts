@@ -3,6 +3,7 @@
 import type { AuditReport, Severity } from "./audit";
 import { stamp, type PostImageSpec, type Tone } from "./postImage";
 import type { StockQuote, StockTokenReport } from "./stocks";
+import type { TrendingReport } from "./trending";
 import type { WhaleActivity } from "./whales";
 import type { YieldPool } from "./yields";
 
@@ -137,6 +138,31 @@ export function whaleSpec(d: WhaleActivity): PostImageSpec {
       sellLabel: `Sells ${100 - buyPct}% · ${compactUsd(d.sellVolumeUsd)}`,
       left: { title: "Top net buyers", rows: d.topBuyers.map(row) },
       right: { title: "Top net sellers", rows: d.topSellers.map(row) },
+    },
+  };
+}
+
+export function trendingSpec(r: TrendingReport): PostImageSpec {
+  return {
+    eyebrow: "Trending · Robinhood Chain · 24h",
+    title: "Trending right now",
+    subtitle: "Trending means attention, not safety. Audit before you buy.",
+    art: "orange",
+    footnote: `${stamp()} · ${r.paidUsd ? "CoinGecko via x402" : "GeckoTerminal"} · Not financial advice`,
+    filename: `loxley-trending-${day()}.png`,
+    body: {
+      type: "table",
+      head: ["Pool", "Volume", "Liquidity", "24h"],
+      rows: r.pools.map((p) => ({
+        label: p.tokenSymbol ?? p.name.split(" / ")[0],
+        sub: `${p.dex}${p.ageDays != null ? ` · ${p.ageDays}d old` : ""}`,
+        c1: compactUsd(p.volume24hUsd),
+        c2: compactUsd(p.liquidityUsd),
+        pill: {
+          text: p.change24hPct == null ? "n/a" : `${p.change24hPct >= 0 ? "+" : ""}${p.change24hPct.toFixed(1)}%`,
+          tone: p.change24hPct == null ? "plain" : p.change24hPct >= 0 ? "ok" : p.change24hPct > -15 ? "md" : "hi",
+        },
+      })),
     },
   };
 }

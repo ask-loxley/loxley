@@ -1,13 +1,16 @@
 // Web search and page reading for the agent.
 // Search: Tavily first (with TAVILY_API_KEY, or its keyless mode for light use), falling back to
 // OpenRouter's web plugin if Tavily fails. Tavily costs ~$0.008 per search versus ~$0.025 for the plugin.
+// When the free Tavily quota runs out, Loxley pays Tavily itself per search with x402 ($0.01, see x402.ts).
 // Reading: Jina Reader turns any public page into plain text, free without a key.
+
+import { paidFetch } from "./x402";
 
 export type WebSearchResult = {
   summary: string;
   sources: { title: string | null; url: string }[];
   results?: { title: string; url: string; snippet: string; published: string | null }[];
-  engine: "tavily" | "openrouter";
+  engine: "tavily" | "tavily-x402" | "openrouter";
 };
 
 export type Recency = "day" | "week" | "month" | "year";
@@ -17,25 +20,30 @@ type TavilyResponse = {
   results?: { title?: string; url?: string; content?: string; published_date?: string | null }[];
 };
 
-async function searchTavily(query: string, recency?: Recency): Promise<WebSearchResult> {
-  const key = process.env.TAVILY_API_KEY;
-  const res = await fetch("https://api.tavily.com/search", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(key ? { Authorization: `Bearer ${key}` } : { "X-Tavily-Access-Mode": "keyless" }),
-    },
-    body: JSON.stringify({
-      query: query.slice(0, 400),
-      search_depth: "basic",
-      max_results: 6,
-      include_answer: "basic",
-      topic: "general",
-      include_published_date: true,
-      ...(recency ? { time_range: recency } : {}),
-    }),
-    signal: AbortSignal.timeout(30_000),
+const tavilyBody = (query: string, recency?: Recency) =>
+  JSON.stringify({
+    query: query.slice(0, 400),
+    search_depth: "basic",
+    max_results: 6,
+    include_answer: "basic",
+    topic: "general",
+    include_published_date: true,
+    ...(recency ? { time_range: recency } : {}),
   });
+
+async function searchTavily(query: string, recency?: Recency, viaX402 = false): Promise<WebSearchResult> {
+  const key = process.env.TAVILY_API_KEY;
+  const res = viaX402
+    ? await paidFetch("https://x402.tavily.com/search", { method: "POST", headers: { "Content-Type": "application/json" }, body: tavilyBody(query, recency) }, "Web search")
+    : await fetch("https://api.tavily.com/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(key ? { Authorization: `Bearer ${key}` } : { "X-Tavily-Access-Mode": "keyless" }),
+        },
+        body: tavilyBody(query, recency),
+        signal: AbortSignal.timeout(30_000),
+      });
   const body = (await res.json().catch(() => null)) as TavilyResponse | null;
   if (!res.ok || !body || !Array.isArray(body.results)) throw new Error(`Tavily search failed: HTTP ${res.status}`);
 
@@ -52,7 +60,7 @@ async function searchTavily(query: string, recency?: Recency): Promise<WebSearch
     summary: body.answer?.trim() || (results.length ? "See the results below." : "No results."),
     sources: results.map((r) => ({ title: r.title || null, url: r.url })),
     results,
-    engine: "tavily",
+    engine: viaX402 ? "tavily-x402" : "tavily",
   };
 }
 
@@ -106,9 +114,14 @@ export async function searchWeb(query: string, recency?: Recency): Promise<WebSe
   try {
     return await searchTavily(query, recency);
   } catch (err) {
-    console.warn("[search] Tavily failed, falling back to OpenRouter:", err instanceof Error ? err.message : err);
-    return searchOpenRouter(query);
+    console.warn("[search] Tavily failed:", err instanceof Error ? err.message : err);
   }
+  try {
+    return await searchTavily(query, recency, true);
+  } catch (err) {
+    console.warn("[search] Tavily via x402 failed, falling back to OpenRouter:", err instanceof Error ? err.message : err);
+  }
+  return searchOpenRouter(query);
 }
 
 // ---------- page reading ----------

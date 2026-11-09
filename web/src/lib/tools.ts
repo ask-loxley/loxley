@@ -5,6 +5,8 @@ import { recentTrades, whaleActivity } from "./whales";
 import { airdropScore } from "./airdrop";
 import { readUrl, searchWeb, type Recency } from "./webSearch";
 import { stockOverview, stockToken } from "./stocks";
+import { trendingPools } from "./trending";
+import { walletSummary } from "./x402";
 import { contentBrief, publishDrafts, type BriefKind } from "./content";
 import {
   EXPLORER_URL,
@@ -136,6 +138,24 @@ export const TOOL_DEFINITIONS = [
           limit: { type: "number", description: "Rows for the overview (default 10)" },
         },
       },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_trending_pools",
+      description:
+        "Trending DEX pools on Robinhood Chain right now (24h): pool, DEX, price, 24h change, volume, liquidity and pool age. Loxley pays for this data itself with x402 (about $0.005) and falls back to a free source.",
+      parameters: { type: "object", properties: { limit: { type: "number", description: "How many pools (default 10)" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_loxley_wallet",
+      description:
+        "Loxley's own operating wallet on Base: address, USDC balance, daily budget, today's and total spend, and recent x402 payments with transaction links. Use when asked about Loxley's wallet, spending or how it pays for data.",
+      parameters: { type: "object", properties: {} },
     },
   },
   {
@@ -305,6 +325,11 @@ export async function runTool(name: string, rawArgs: string): Promise<unknown> {
     if (typeof symbol === "string" && symbol.trim()) return stockToken({ symbol: symbol.trim() });
     return stockOverview(Number.isFinite(Number(limit)) ? Number(limit) : 10);
   }
+  if (name === "get_trending_pools") {
+    const limit = Number((args as { limit?: unknown }).limit);
+    return trendingPools(Number.isFinite(limit) ? limit : 10);
+  }
+  if (name === "get_loxley_wallet") return walletSummary();
   if (name === "read_url") {
     const url = typeof (args as { url?: unknown }).url === "string" ? (args as { url: string }).url : "";
     if (!url) return { error: "Pass a full https:// link." };

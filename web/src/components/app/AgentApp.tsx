@@ -16,6 +16,8 @@ import type { YieldPool } from "@/lib/yields";
 import AuditCard from "./AuditCard";
 import PnlCard from "./PnlCard";
 import StockCard from "./StockCard";
+import TrendingCard from "./TrendingCard";
+import type { TrendingReport } from "@/lib/trending";
 import type { StockTokenReport } from "@/lib/stocks";
 import WhaleCard from "./WhaleCard";
 import YieldCard from "./YieldCard";
@@ -27,6 +29,7 @@ type Card =
   | { kind: "whale"; key: string; data: WhaleActivity }
   | { kind: "airdrop"; key: string; data: AirdropReport }
   | { kind: "stock"; key: string; data: StockTokenReport }
+  | { kind: "trending"; key: string; data: TrendingReport }
   | { kind: "drafts"; key: string; data: { title: string | null; drafts: Draft[]; warnings: string[] } };
 import RichText from "./RichText";
 import styles from "./AgentApp.module.css";
@@ -85,6 +88,8 @@ const STEP_LABEL: Record<string, string> = {
   search_web: "Searching the web",
   read_url: "Reading the page",
   get_stock_tokens: "Checking stock tokens",
+  get_trending_pools: "Finding trending pools",
+  get_loxley_wallet: "Checking my wallet",
   get_content_brief: "Gathering data for the post",
   publish_drafts: "Preparing drafts",
 };
@@ -107,6 +112,7 @@ function toCard(name: string, id: string, d: unknown): Card | null {
   if (name === "find_yields" && "pools" in d) return { kind: "yield", key: id, data: d as { pools: YieldPool[]; note: string } };
   if (name === "get_whale_activity" && "topBuyers" in d) return { kind: "whale", key: id, data: d as WhaleActivity };
   if (name === "get_airdrop_score" && "breakdown" in d) return { kind: "airdrop", key: id, data: d as AirdropReport };
+  if (name === "get_trending_pools" && "pools" in d) return { kind: "trending", key: id, data: d as TrendingReport };
   if (name === "get_stock_tokens" && "kind" in d) return { kind: "stock", key: id, data: d as StockTokenReport };
   if (name === "publish_drafts" && "drafts" in d) {
     return { kind: "drafts", key: id, data: d as { title: string | null; drafts: Draft[]; warnings: string[] } };
@@ -280,6 +286,11 @@ export default function AgentApp() {
             </a>
           </div>
         )}
+        <div className={styles.tg}>
+          <h2 className={styles.sideTitle}>Loxley&apos;s wallet</h2>
+          <p>Loxley pays for some data itself with x402. Every payment is public.</p>
+          <Link href="/wallet">See the wallet ↗</Link>
+        </div>
         <div className={styles.sideFoot}>
           <Socials tone="light" />
           <p className={styles.sideNote}>Read-only. Loxley never asks for keys or seed phrases. Not financial advice.</p>
@@ -356,6 +367,8 @@ export default function AgentApp() {
                         <YieldCard key={c.key} pools={c.data.pools} note={c.data.note} />
                       ) : c.kind === "airdrop" ? (
                         <AirdropCard key={c.key} report={c.data} />
+                      ) : c.kind === "trending" ? (
+                        <TrendingCard key={c.key} report={c.data} />
                       ) : c.kind === "stock" ? (
                         <StockCard key={c.key} report={c.data} />
                       ) : c.kind === "drafts" ? (
