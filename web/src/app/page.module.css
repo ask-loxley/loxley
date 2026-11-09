@@ -411,21 +411,54 @@
 }
 
 /* steps */
+/* How it works: the standing statue on the left, the three steps stacked on the right */
 .steps {
+  display: grid;
+  grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+  gap: 72px;
+  align-items: center;
   padding: 0 96px 110px;
-  text-align: center;
+}
+
+.howArt {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.howArt img {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  animation: stand 9s ease-in-out infinite;
+  /* soft edges all round, so the engraved ground shadow never shows a hard border */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent), linear-gradient(180deg, #000 86%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent), linear-gradient(180deg, #000 86%, transparent);
+  mask-composite: intersect;
+}
+
+/* a slow breath, as if the statue shifts its weight */
+@keyframes stand {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(0.4deg);
+  }
 }
 
 .steps .h2 {
-  margin: 12px 0 56px;
+  margin: 12px 0 36px;
   font-size: 60px;
   line-height: 1;
 }
 
 .grid3 {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -439,13 +472,13 @@
   content: "";
   position: absolute;
   z-index: -1;
-  top: 64px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: repeating-linear-gradient(90deg, var(--vermilion) 0 10px, transparent 10px 16px);
-  transform: scaleX(clamp(0, calc((var(--p, 1) - 0.2) * 2.6), 1));
-  transform-origin: left;
+  top: 0;
+  bottom: 0;
+  left: 75px;
+  width: 2px;
+  background: repeating-linear-gradient(180deg, var(--vermilion) 0 10px, transparent 10px 16px);
+  transform: scaleY(clamp(0, calc((var(--p, 1) - 0.15) * 2.2), 1));
+  transform-origin: top;
 }
 
 .grid3 > li {
@@ -454,7 +487,11 @@
 
 .step {
   flex: 1;
-  padding: 32px;
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 26px 32px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--paper);
@@ -486,7 +523,7 @@
 }
 
 .step h3 {
-  margin: 18px 0 10px;
+  margin: 0 0 8px;
   font-size: 22px;
   font-weight: 500;
 }
@@ -728,6 +765,21 @@
   .grid3::before {
     display: none;
   }
+  .steps {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .howArt img {
+    max-width: 260px;
+  }
+  .step {
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 14px;
+    padding: 22px 20px;
+  }
+  .step .num {
+    font-size: 44px;
+  }
   .giant {
     margin: 0 -24px 28px;
   }
@@ -759,6 +811,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .howArt img {
+    animation: none;
+  }
   .scan,
   .btn::after {
     display: none;

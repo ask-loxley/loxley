@@ -156,21 +156,34 @@ export default function Home() {
         </Reveal>
 
         <section id="how" className={styles.steps}>
-          <Reveal>
-            <span className={styles.eyebrow}>How it works</span>
-            <SplitTitle className={styles.h2} text="Three steps to a *sharper* wallet" />
+          <Reveal className={styles.howArt}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/loxley-standing.webp"
+              alt="Loxley, a full-length engraved Roman statue wearing headphones, holding a book with his own portrait on the cover"
+              loading="lazy"
+              data-parallax="0.06"
+            />
           </Reveal>
-          <ol className={styles.grid3} data-progress>
-            {STEPS.map((s, i) => (
-              <li key={s.title} data-tilt="8">
-                <Reveal delay={i * 140} className={styles.step}>
-                  <div className={styles.num}>{String(i + 1).padStart(2, "0")}</div>
-                  <h3>{s.title}</h3>
-                  <p>{s.text}</p>
-                </Reveal>
-              </li>
-            ))}
-          </ol>
+          <div className={styles.howBody}>
+            <Reveal>
+              <span className={styles.eyebrow}>How it works</span>
+              <SplitTitle className={styles.h2} text="Three steps to a *sharper* wallet" />
+            </Reveal>
+            <ol className={styles.grid3} data-progress>
+              {STEPS.map((s, i) => (
+                <li key={s.title} data-tilt="5">
+                  <Reveal delay={i * 140} className={styles.step}>
+                    <div className={styles.num}>{String(i + 1).padStart(2, "0")}</div>
+                    <div>
+                      <h3>{s.title}</h3>
+                      <p>{s.text}</p>
+                    </div>
+                  </Reveal>
+                </li>
+              ))}
+            </ol>
+          </div>
         </section>
 
         <Reveal id="safety" className={styles.safe}>
