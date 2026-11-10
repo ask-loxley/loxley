@@ -305,6 +305,11 @@ export default function AgentApp() {
         )}
         <TokenBar compact />
         <div className={styles.tg}>
+          <h2 className={styles.sideTitle}>Premium report</h2>
+          <p>$LOXLEY holders: get your whole wallet audited in one health score.</p>
+          <Link href="/premium">Open the report ↗</Link>
+        </div>
+        <div className={styles.tg}>
           <h2 className={styles.sideTitle}>Loxley&apos;s wallet</h2>
           <p>Loxley pays for some data itself with x402. Every payment is public.</p>
           <Link href="/wallet">See the wallet ↗</Link>

@@ -6,6 +6,7 @@ import { getDb, onCloudflare } from "./cf";
 const LIMITS = {
   chat: { perIp: 15, ipWindowSec: 3600, global: 300, globalWindowSec: 86_400 },
   data: { perIp: 30, ipWindowSec: 3600, global: 1500, globalWindowSec: 86_400 },
+  report: { perIp: 6, ipWindowSec: 3600, global: 150, globalWindowSec: 86_400 },
 } as const;
 
 async function hit(bucket: string, windowSec: number): Promise<{ count: number; resetAt: number }> {

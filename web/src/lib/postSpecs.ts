@@ -7,6 +7,7 @@ import type { DevReport } from "./devwatch";
 import type { TrendingReport } from "./trending";
 import type { WhaleActivity } from "./whales";
 import type { WhatIfReport } from "./whatif";
+import type { WalletReport } from "./report";
 import type { YieldPool } from "./yields";
 
 const usd = (n: number | null | undefined) =>
@@ -213,6 +214,32 @@ export function devSpec(r: DevReport): PostImageSpec {
         { text: `Holds ${r.holdsPct == null ? "unknown" : r.holdsPct.toFixed(2) + "%"} of supply now`, tone: "plain" },
         { text: `Burned ${r.burnedPct.toFixed(2)}% of supply`, tone: r.burnedPct > 0 ? "ok" : "plain" },
         { text: `Moved ${moved.toFixed(2)}% to other wallets`, tone: moved >= 1 ? "md" : "plain" },
+      ],
+    },
+  };
+}
+
+export function reportSpec(r: WalletReport): PostImageSpec {
+  const h = r.health ?? 0;
+  const tone: Tone = r.health == null ? "plain" : h >= 75 ? "ok" : h >= 45 ? "md" : "hi";
+  const risky = r.holdings.filter((x) => x.kind === "token" && (x.verdict === "high risk" || x.dev === "selling")).length;
+  return {
+    eyebrow: "Premium wallet report · $LOXLEY holders",
+    title: "How healthy is this wallet?",
+    subtitle: `${short(r.address)} · ${r.holdings.length} positions checked`,
+    art: "blue",
+    footnote: `${stamp()} · Blockscout, DefiLlama · Not financial advice`,
+    filename: `loxley-wallet-report-${r.address.slice(0, 8)}.png`,
+    body: {
+      type: "stat",
+      value: r.health == null ? "n/a" : String(r.health),
+      unit: r.health == null ? undefined : "/100",
+      verdict: r.health == null ? "no data" : h >= 75 ? "healthy" : h >= 45 ? "mixed" : "at risk",
+      tone,
+      points: [
+        { text: `${compactUsd(r.totalUsd)} across ${r.holdings.length} checked tokens`, tone: "plain" },
+        { text: risky ? `${risky} risky position${risky === 1 ? "" : "s"} flagged` : "No high-risk positions found", tone: risky ? "hi" : "ok" },
+        { text: r.airdrop ? `Airdrop readiness ${r.airdrop.score}/100 · ${r.airdrop.tier}` : "Airdrop score unavailable", tone: "plain" },
       ],
     },
   };
