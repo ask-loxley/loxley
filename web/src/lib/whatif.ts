@@ -1,7 +1,8 @@
 // "What if I had bought X": past price from daily DEX candles (GeckoTerminal), price now from the same pool.
 
 import { isAddress } from "./blockscout";
-import { officialStockTokens } from "./stocks";
+import { coinId, currentPrices, historicalPrices } from "./prices";
+import { dexMarkets, officialStockTokens } from "./stocks";
 
 export type WhatIfReport = {
   kind: "whatif";
@@ -23,10 +24,24 @@ export type WhatIfReport = {
 const GT = "https://api.geckoterminal.com/api/v2/networks/robinhood";
 type GtPool = { attributes: { address: string; name: string; reserve_in_usd?: string | null; base_token_price_usd?: string | null; quote_token_price_usd?: string | null }; relationships?: { base_token?: { data?: { id?: string } } } };
 
+// GeckoTerminal rate-limits shared cloud IPs, so a failed direct call is retried once through the Jina relay.
 async function gt<T>(path: string): Promise<T> {
-  const res = await fetch(GT + path, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(15_000) });
-  if (!res.ok) throw new Error(`Price history unavailable (HTTP ${res.status}).`);
-  return (await res.json()) as T;
+  const direct = await fetch(GT + path, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(15_000) }).catch(() => null);
+  if (direct?.ok) return (await direct.json()) as T;
+  const relay = await fetch(`https://r.jina.ai/${GT}${path}`, { headers: { Accept: "text/plain" }, signal: AbortSignal.timeout(25_000) }).catch(() => null);
+  const text = relay?.ok ? await relay.text() : "";
+  const start = text.indexOf("{"), end = text.lastIndexOf("}");
+  if (start >= 0 && end > start) return JSON.parse(text.slice(start, end + 1)) as T;
+  throw new Error(`Price history unavailable (HTTP ${direct?.status ?? "network error"}).`);
+}
+
+/** DefiLlama prices (then and now) for one token, if it tracks it. */
+async function fromLlama(address: string, days: number) {
+  const coin = coinId(address);
+  const ts = Math.floor(Date.now() / 1000) - days * 86_400;
+  const [now, then] = await Promise.all([currentPrices([coin]), historicalPrices([{ coin, ts }])]);
+  const priceNow = now[coin], priceThen = then.get(`${coin}@${ts}`);
+  return priceNow > 0 && (priceThen ?? 0) > 0 ? { priceNow, priceThen: priceThen as number, ts } : null;
 }
 
 /** Resolves a ticker (official stock tokens first) or an address to a token address. */
@@ -44,6 +59,34 @@ export async function whatIf({ token, amountUsd = 100, daysAgo = 7 }: { token: s
   const days = Math.min(365, Math.max(1, Math.round(Number(daysAgo) || 7)));
   const { address, label } = await resolve(token);
 
+  try {
+    return await fromDex(address, label, amount, days);
+  } catch (err) {
+    // Last resort: DefiLlama's reference price, which can differ from the DEX price.
+    const llama = await fromLlama(address, days).catch(() => null);
+    if (!llama) throw err;
+    const dex = (await dexMarkets([address]).catch(() => new Map())).get(address);
+    const stock = (await officialStockTokens().catch(() => [])).find((t) => t.address.toLowerCase() === address);
+    return {
+      kind: "whatif",
+      token: address,
+      symbol: label ?? stock?.symbol ?? "token",
+      name: stock?.name.replace(/\s*•\s*Robinhood Token$/, "") ?? null,
+      amountUsd: amount,
+      daysAgo: days,
+      boughtOn: new Date(llama.ts * 1000).toISOString().slice(0, 10),
+      priceThen: llama.priceThen,
+      priceNow: llama.priceNow,
+      valueNow: (amount / llama.priceThen) * llama.priceNow,
+      changePct: (llama.priceNow / llama.priceThen - 1) * 100,
+      pool: "DefiLlama reference price",
+      poolUrl: dex?.url ?? `https://robinhoodchain.blockscout.com/token/${address}`,
+      notes: ["DEX price history was unavailable, so this uses DefiLlama's reference price, which can differ from the DEX price. Ignores fees, slippage and gas."],
+    };
+  }
+}
+
+async function fromDex(address: string, label: string | null, amount: number, days: number): Promise<WhatIfReport> {
   // Deepest pool where this token is the base asset.
   const pools = (await gt<{ data: GtPool[] }>(`/tokens/${address}/pools?page=1`)).data ?? [];
   const mine = pools.filter((p) => p.relationships?.base_token?.data?.id?.toLowerCase() === `robinhood_${address}`);

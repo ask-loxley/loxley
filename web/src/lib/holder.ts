@@ -4,7 +4,8 @@
 
 import { getAddress, verifyMessage, type Hex } from "viem";
 import { getTokenBalances, isAddress } from "./blockscout";
-import { dexMarkets } from "./stocks";
+import { kvGet, kvSet } from "./kv";
+import { paidFetch } from "./x402";
 import { loxleyToken } from "./token";
 
 const COOKIE = "lx_holder";
@@ -16,19 +17,42 @@ const fallbackTokens = () => Number(process.env.HOLDER_MIN_LOXLEY || 2_500_000);
 
 let priceCache: { at: number; value: number | null } | null = null;
 
-/** Live $LOXLEY price in USD: DexScreener, then GeckoTerminal. Cached for 5 minutes. */
+const PRICE_KEY = "loxley-price";
+
+/**
+ * Live $LOXLEY price in USD. GeckoTerminal first (free, but it rate-limits Cloudflare), then CoinGecko paid
+ * by Loxley's own wallet with x402. Shared through the kv store and refreshed at most once an hour.
+ */
 export async function loxleyPrice(): Promise<number | null> {
   if (priceCache && Date.now() - priceCache.at < 5 * 60_000) return priceCache.value;
+  const stored = await kvGet<{ at: number; value: number }>(PRICE_KEY);
+  if (stored && Date.now() - stored.at < 60 * 60_000) {
+    priceCache = { at: Date.now(), value: stored.value };
+    return stored.value;
+  }
   const token = await loxleyToken();
   let value: number | null = null;
   if (token) {
-    value = (await dexMarkets([token.ca]).catch(() => new Map())).get(token.ca.toLowerCase())?.price ?? null;
-    if (value == null) {
-      const res = await fetch(`https://api.geckoterminal.com/api/v2/networks/robinhood/tokens/${token.ca.toLowerCase()}`, { signal: AbortSignal.timeout(10_000) }).catch(() => null);
-      const p = Number(((await res?.json().catch(() => null)) as { data?: { attributes?: { price_usd?: string } } } | null)?.data?.attributes?.price_usd);
-      value = p > 0 ? p : null;
+    const ca = token.ca.toLowerCase();
+    const free = await fetch(`https://api.geckoterminal.com/api/v2/simple/networks/robinhood/token_price/${ca}`, { signal: AbortSignal.timeout(10_000) }).catch(() => null);
+    const read = async (res: Response | null) =>
+      Number(((await res?.json().catch(() => null)) as { data?: { attributes?: { token_prices?: Record<string, string> } } } | null)?.data?.attributes?.token_prices?.[ca]);
+    let p = free?.ok ? await read(free) : NaN;
+    if (!(p > 0)) {
+      // GeckoTerminal rate-limits cloud IPs; the Jina relay usually gets through before we pay.
+      const relay = await fetch(`https://r.jina.ai/https://api.geckoterminal.com/api/v2/simple/networks/robinhood/token_price/${ca}`, { headers: { Accept: "text/plain" }, signal: AbortSignal.timeout(20_000) }).catch(() => null);
+      const text = relay?.ok ? await relay.text() : "";
+      const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+      p = json ? await read(new Response(json)) : NaN;
     }
+    if (!(p > 0)) {
+      const paid = await paidFetch(`https://pro-api.coingecko.com/api/v3/x402/onchain/simple/networks/robinhood/token_price/${ca}`, { headers: { Accept: "application/json" } }, "$LOXLEY price").catch(() => null);
+      p = paid?.ok ? await read(paid) : NaN;
+    }
+    value = p > 0 ? p : null;
   }
+  if (value != null) await kvSet(PRICE_KEY, { at: Date.now(), value }).catch(() => null);
+  else if (stored) value = stored.value; // keep the last known price rather than dropping to the fallback
   priceCache = { at: Date.now(), value };
   return value;
 }
