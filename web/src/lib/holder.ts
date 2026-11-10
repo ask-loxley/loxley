@@ -1,15 +1,43 @@
 // $LOXLEY holder verification: the visitor signs a plain message (no transaction, no gas) to prove they own a
-// wallet, then Loxley reads that wallet's $LOXLEY balance on-chain. Holders above HOLDER_MIN_LOXLEY get a
-// signed session cookie that unlocks premium reports. Nothing is stored server-side.
+// wallet, then Loxley reads that wallet's $LOXLEY balance on-chain. Holders worth at least HOLDER_MIN_USD
+// (at the live DEX price) get a signed session cookie that unlocks premium reports. Nothing is stored server-side.
 
 import { getAddress, verifyMessage, type Hex } from "viem";
 import { getTokenBalances, isAddress } from "./blockscout";
+import { dexMarkets } from "./stocks";
 import { loxleyToken } from "./token";
 
 const COOKIE = "lx_holder";
 const SESSION_SEC = 24 * 3600;
 const CHALLENGE_SEC = 10 * 60;
-export const minHolding = () => Number(process.env.HOLDER_MIN_LOXLEY || 1_000_000);
+export const minUsd = () => Number(process.env.HOLDER_MIN_USD || 10);
+// Used when no live price is available.
+const fallbackTokens = () => Number(process.env.HOLDER_MIN_LOXLEY || 2_500_000);
+
+let priceCache: { at: number; value: number | null } | null = null;
+
+/** Live $LOXLEY price in USD: DexScreener, then GeckoTerminal. Cached for 5 minutes. */
+export async function loxleyPrice(): Promise<number | null> {
+  if (priceCache && Date.now() - priceCache.at < 5 * 60_000) return priceCache.value;
+  const token = await loxleyToken();
+  let value: number | null = null;
+  if (token) {
+    value = (await dexMarkets([token.ca]).catch(() => new Map())).get(token.ca.toLowerCase())?.price ?? null;
+    if (value == null) {
+      const res = await fetch(`https://api.geckoterminal.com/api/v2/networks/robinhood/tokens/${token.ca.toLowerCase()}`, { signal: AbortSignal.timeout(10_000) }).catch(() => null);
+      const p = Number(((await res?.json().catch(() => null)) as { data?: { attributes?: { price_usd?: string } } } | null)?.data?.attributes?.price_usd);
+      value = p > 0 ? p : null;
+    }
+  }
+  priceCache = { at: Date.now(), value };
+  return value;
+}
+
+/** Tokens needed right now: HOLDER_MIN_USD worth at the live price, or the fixed fallback amount. */
+export async function minHolding(): Promise<number> {
+  const price = await loxleyPrice().catch(() => null);
+  return price ? Math.ceil(minUsd() / price) : fallbackTokens();
+}
 
 function secret(): string {
   const s = process.env.HOLDER_SECRET;
@@ -85,7 +113,7 @@ export async function loxleyBalance(address: string): Promise<number> {
 
 // ---------- verify + session ----------
 
-export type HolderStatus = { address: string; balance: number; min: number; eligible: boolean };
+export type HolderStatus = { address: string; balance: number; min: number; minUsd: number; eligible: boolean };
 
 export async function verifySignature(input: { address: string; message: string; signature: string; token: string }): Promise<HolderStatus> {
   if (!isAddress(input.address)) throw new Error("Not a valid wallet address.");
@@ -96,8 +124,8 @@ export async function verifySignature(input: { address: string; message: string;
   if (!(Date.now() - issued < CHALLENGE_SEC * 1000)) throw new Error("That sign-in request expired. Start again.");
   const ok = await verifyMessage({ address, message: input.message, signature: input.signature as Hex }).catch(() => false);
   if (!ok) throw new Error("The signature doesn't match this wallet.");
-  const balance = await loxleyBalance(address);
-  return { address, balance, min: minHolding(), eligible: balance >= minHolding() };
+  const [balance, min] = await Promise.all([loxleyBalance(address), minHolding()]);
+  return { address, balance, min, minUsd: minUsd(), eligible: balance >= min };
 }
 
 export async function sessionCookie(address: string): Promise<string> {
@@ -115,6 +143,6 @@ export async function currentHolder(request: Request): Promise<HolderStatus | nu
   const [address, exp, sig] = raw.split(".");
   if (!address || !exp || !sig || !isAddress(address) || Number(exp) * 1000 < Date.now()) return null;
   if (!sameHex(await hmac(`${address}.${exp}`), sig)) return null;
-  const balance = await loxleyBalance(address);
-  return { address: getAddress(address), balance, min: minHolding(), eligible: balance >= minHolding() };
+  const [balance, min] = await Promise.all([loxleyBalance(address), minHolding()]);
+  return { address: getAddress(address), balance, min, minUsd: minUsd(), eligible: balance >= min };
 }

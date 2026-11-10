@@ -22,6 +22,7 @@ const tone = (h: WalletReport["holdings"][number]) =>
 export default function PremiumView() {
   const [holder, setHolder] = useState<HolderStatus | null>(null);
   const [min, setMin] = useState<number | null>(null);
+  const [minUsd, setMinUsd] = useState<number | null>(null);
   const [step, setStep] = useState<"idle" | "connecting" | "signing" | "checking">("idle");
   const [error, setError] = useState<string | null>(null);
   const [notEnough, setNotEnough] = useState<HolderStatus | null>(null);
@@ -35,6 +36,7 @@ export default function PremiumView() {
       .then((d) => {
         setHolder(d.holder?.eligible ? d.holder : null);
         setMin(d.min ?? null);
+        setMinUsd(d.minUsd ?? null);
       })
       .catch(() => null);
   }, []);
@@ -110,7 +112,7 @@ export default function PremiumView() {
           <section className={styles.box}>
             <h2>Verify you hold $LOXLEY</h2>
             <p>
-              Hold at least <b>{min != null ? fmt(min) : "…"} $LOXLEY</b>, then sign a message with your wallet. Signing is not a transaction: it
+              Hold at least <b>${minUsd ?? 10} worth of $LOXLEY</b>{min != null ? ` (about ${fmt(min)} $LOXLEY at today's price)` : ""}, then sign a message with your wallet. Signing is not a transaction: it
               costs no gas and gives no one access to your funds. Loxley never asks for your keys.
             </p>
             <button type="button" className={styles.primary} onClick={verify} disabled={step !== "idle"}>
@@ -118,7 +120,7 @@ export default function PremiumView() {
             </button>
             {notEnough && (
               <p className={styles.warn}>
-                {short(notEnough.address)} holds {fmt(notEnough.balance)} $LOXLEY. The premium report needs {fmt(notEnough.min)}.
+                {short(notEnough.address)} holds {fmt(notEnough.balance)} $LOXLEY. The premium report needs ${notEnough.minUsd} worth, about {fmt(notEnough.min)} at today&apos;s price.
               </p>
             )}
           </section>

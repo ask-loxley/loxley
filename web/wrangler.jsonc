@@ -42,7 +42,8 @@
     "OPENROUTER_LIGHT_MODEL": "anthropic/claude-haiku-5.5",
     "BLOCKSCOUT_API_BASE": "https://api.blockscout.com/4663/api/v2",
     "ALERT_INTERVAL_SEC": "120",
-    "HOLDER_MIN_LOXLEY": "1000000"
+    "HOLDER_MIN_USD": "10",
+    "HOLDER_MIN_LOXLEY": "2500000"
   },
   "observability": {
     "enabled": true

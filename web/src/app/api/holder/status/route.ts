@@ -1,10 +1,11 @@
 import { connection } from "next/server";
-import { clearCookie, currentHolder, minHolding } from "@/lib/holder";
+import { clearCookie, currentHolder, minHolding, minUsd } from "@/lib/holder";
 
 export async function GET(request: Request) {
   await connection();
   const holder = await currentHolder(request).catch(() => null);
-  return Response.json({ holder, min: minHolding() }, { headers: { "Cache-Control": "no-store" } });
+  const min = await minHolding().catch(() => null);
+  return Response.json({ holder, min, minUsd: minUsd() }, { headers: { "Cache-Control": "no-store" } });
 }
 
 // Sign out.
